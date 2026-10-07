@@ -69,6 +69,10 @@ create table public.reminders (
   unique (student_id, credits)
 );
 
+-- Permissões explícitas (projeto sem "expose new tables"): anon não acessa nada.
+grant usage on schema public to authenticated, service_role;
+grant select, insert, update, delete on all tables in schema public to authenticated, service_role;
+
 -- RLS: professor só enxerga os próprios dados. Página do aluno e cron usam service role.
 alter table public.teachers enable row level security;
 alter table public.students enable row level security;
