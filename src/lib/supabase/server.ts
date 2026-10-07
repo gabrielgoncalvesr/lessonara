@@ -1,12 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 
 /** Cliente com a sessão do professor logado (RLS ativo). */
 export async function createClient() {
+  // A inicialização do auth consulta o relógio; deve ocorrer só na requisição.
+  await connection();
   const cookieStore = await cookies();
   return createServerClient(url, publishableKey, {
     cookies: {

@@ -1,14 +1,18 @@
+import { Resend } from "resend";
+
 export async function sendEmail(input: { to: string; subject: string; html: string; replyTo?: string }) {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: process.env.EMAIL_FROM ?? "Lessonara <onboarding@resend.dev>",
-      to: input.to,
-      subject: input.subject,
-      html: input.html,
-      reply_to: input.replyTo,
-    }),
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) throw new Error("RESEND_API_KEY não configurada.");
+
+  const resend = new Resend(apiKey);
+  const { data, error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM || "Lessonara <onboarding@resend.dev>",
+    to: input.to,
+    subject: input.subject,
+    html: input.html,
+    replyTo: input.replyTo,
   });
-  if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
+  if (error) throw new Error(`Resend ${error.name}: ${error.message}`);
+  if (!data?.id) throw new Error("Resend não confirmou o envio do email.");
+  return data;
 }

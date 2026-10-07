@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import PanelLoading from "../../loading";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Balance } from "@/components/balance";
@@ -24,7 +26,11 @@ import {
 } from "../../actions";
 import { StudentFields } from "../student-form";
 
-export default async function StudentPage({ params }: PageProps<"/alunos/[id]">) {
+export default function StudentPage({ params }: PageProps<"/alunos/[id]">) {
+  return <Suspense fallback={<PanelLoading />}><StudentContent params={params} /></Suspense>;
+}
+
+async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "params">) {
   const { id } = await params;
   const { supabase } = await requireUser();
   const [{ data: student }, { data: plansData }] = await Promise.all([
@@ -59,8 +65,8 @@ export default async function StudentPage({ params }: PageProps<"/alunos/[id]">)
 
   return (
     <main className="space-y-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href="/" className="text-sm text-muted hover:text-fg">← Alunos</Link>
+      <div className="detail-heading flex flex-wrap items-center gap-3">
+        <Link href="/alunos" className="text-sm text-muted hover:text-fg">← Alunos</Link>
         <h1 className="w-full text-xl font-semibold">{student.name}</h1>
         <code className="truncate rounded bg-surface px-2 py-1 text-xs text-muted">{link}</code>
         <CopyButton text={link} />
@@ -69,6 +75,7 @@ export default async function StudentPage({ params }: PageProps<"/alunos/[id]">)
 
       <Balance ledger={ledger} />
 
+      <div className="detail-grid">
       <section className="card">
         <h2 className="h2">Próximas aulas</h2>
         <LessonList lessons={upcoming} actions={lessonActions} />
@@ -190,6 +197,7 @@ export default async function StudentPage({ params }: PageProps<"/alunos/[id]">)
           </form>
         </div>
       </section>
+      </div>
     </main>
   );
 }

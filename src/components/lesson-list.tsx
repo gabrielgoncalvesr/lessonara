@@ -24,10 +24,10 @@ export function LessonList({
         const s = STATUS[l.status];
         const uncovered = l.counts && l.packageIndex === null;
         return (
-          <li key={`${l.date}-${l.time}-${l.status}`} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 text-sm">
+          <li key={`${l.date}-${l.time}-${l.status}`} className="lesson-row flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
             <span className={`w-24 tabular-nums ${l.past ? "" : "font-medium"}`}>{formatDateLong(l.date)}</span>
             <span className="w-12 tabular-nums text-muted">{l.time}</span>
-            <span className={s.className}>{s.label}</span>
+            <span className={`lesson-status ${s.className}`}>{s.label}</span>
             {uncovered && <span className="rounded bg-warn/15 px-1.5 py-0.5 text-xs text-warn">sem pacote</span>}
             {l.event?.note && <span className="text-xs text-muted">· {l.event.note}</span>}
             {actions && <span className="ml-auto flex gap-1">{actions(l)}</span>}

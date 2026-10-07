@@ -2,66 +2,15 @@
 
 import { useActionState } from "react";
 import { LogoMark } from "@/components/logo";
+import { Icon } from "@/components/icon";
 import { signIn } from "./actions";
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(signIn, null);
-
   return (
     <main className="grid min-h-screen lg:grid-cols-2">
-      <section className="relative hidden overflow-hidden bg-accent p-12 text-accent-fg lg:flex lg:flex-col">
-        <div className="flex items-center gap-3">
-          <LogoMark className="h-9 w-9 text-accent-fg" />
-          <span className="text-xl font-semibold tracking-tight">Lessonara</span>
-        </div>
-
-        <div className="my-auto max-w-md">
-          <h1 className="text-4xl font-semibold leading-tight tracking-tight">
-            Suas aulas, sem perder a conta.
-          </h1>
-          <p className="mt-4 text-lg opacity-80">
-            Controle de aulas e pacotes, com um link pra cada aluno acompanhar as próprias aulas.
-          </p>
-        </div>
-
-        <div aria-hidden className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full border-[48px] border-accent-fg/10" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-10 right-24 h-40 w-40 rounded-full border-[24px] border-accent-fg/10" />
-      </section>
-
-      <section className="flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-sm">
-          <div className="mb-10 flex items-center gap-3 lg:hidden">
-            <LogoMark className="h-9 w-9 text-accent" />
-            <span className="text-xl font-semibold tracking-tight">Lessonara</span>
-          </div>
-
-          <h2 className="text-2xl font-semibold tracking-tight">Entrar</h2>
-          <p className="mt-1 text-sm text-muted">Acesse o painel das suas aulas.</p>
-
-          <form action={action} className="mt-8 space-y-4">
-            <div>
-              <label className="label" htmlFor="email">Email</label>
-              <input className="input py-2.5" id="email" name="email" type="email" required autoComplete="email" autoFocus defaultValue={state?.email} key={state?.email} />
-            </div>
-            <div>
-              <label className="label" htmlFor="password">Senha</label>
-              <input className="input py-2.5" id="password" name="password" type="password" required autoComplete="current-password" />
-            </div>
-            {state?.error && (
-              <p role="alert" className="rounded-lg border border-bad/30 bg-bad/10 px-3 py-2 text-sm text-bad">
-                {state.error}
-              </p>
-            )}
-            <button className="btn w-full py-2.5" disabled={pending}>
-              {pending ? "Entrando…" : "Entrar"}
-            </button>
-          </form>
-
-          <p className="mt-8 text-center text-xs text-muted">
-            É aluno? Use o link que sua professora enviou.
-          </p>
-        </div>
-      </section>
+      <section className="login-art max-lg:hidden"><div className="brand"><LogoMark className="h-9 w-9 text-accent" /><span>lessonara<span className="brand-dot">.</span></span></div><div className="login-story"><p className="eyebrow">SEU ESPAÇO PARA ENSINAR</p><h1>Você cuida do ensino.<br />A gente cuida da <em>organização.</em></h1><p>Uma rotina mais leve para quem ensina. Reúna seus alunos, acompanhe as aulas e mantenha os pacotes em dia.</p><div className="login-preview" aria-hidden="true"><div className="mb-2 flex items-center justify-between"><span className="text-xs font-semibold">Tudo no seu lugar</span><span className="rounded-full bg-accent/10 px-2 py-1 text-[9px] text-accent">Seu dia, mais leve</span></div>{[{ icon: "users" as const, label: "Cada aluno, uma jornada", text: "Acompanhe a evolução de cada pacote" }, { icon: "calendar" as const, label: "Sua agenda organizada", text: "Horários fixos e reposições no mesmo lugar" }, { icon: "book" as const, label: "Sem perder a conta", text: "Aulas e pagamentos sempre à mão" }].map((item) => <div key={item.label} className="login-preview-row"><span className="stat-icon"><Icon name={item.icon} className="h-4 w-4" /></span><div><p className="text-xs font-medium">{item.label}</p><p className="mt-1 text-[10px] text-muted">{item.text}</p></div></div>)}</div></div><p className="login-art-footer">Mais presença nas aulas. Menos tempo nas planilhas.</p></section>
+      <section className="login-form-side"><div className="login-form-wrap"><div className="brand mb-12 lg:hidden"><LogoMark className="h-9 w-9 text-accent" /><span>lessonara<span className="brand-dot">.</span></span></div><p className="eyebrow">BEM-VINDA AO SEU ESPAÇO</p><h2>Que bom ter você aqui.</h2><p className="mt-3 text-sm leading-relaxed text-muted">Entre para organizar o seu próximo encontro.</p><form action={action} className="mt-9 space-y-5"><div><label className="label" htmlFor="email">Seu email</label><input className="input" id="email" name="email" type="email" placeholder="voce@exemplo.com" required autoComplete="email" defaultValue={state?.email} key={state?.email} /></div><div><label className="label" htmlFor="password">Senha</label><input className="input" id="password" name="password" type="password" placeholder="Sua senha" required autoComplete="current-password" /></div>{state?.error && <p role="alert" className="rounded-xl border border-bad/30 bg-bad/5 px-3 py-3 text-sm text-bad">{state.error}</p>}<button className="btn w-full" disabled={pending}>{pending ? "Entrando…" : "Entrar no meu espaço"}<Icon name="arrow" className="h-4 w-4" /></button></form><div className="mt-9 border-t border-line pt-6 text-center"><p className="text-xs text-muted">É aluno? A sua jornada também está aqui.</p><p className="mt-2 text-xs text-muted">Acesse pelo link enviado pela sua professora.</p></div></div></section>
     </main>
   );
 }
