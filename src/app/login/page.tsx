@@ -4,13 +4,6 @@ import { useActionState } from "react";
 import { LogoMark } from "@/components/logo";
 import { signIn } from "./actions";
 
-const FEATURES = [
-  { title: "Agenda fixa", text: "Cadastre o horário uma vez. As aulas aparecem sozinhas." },
-  { title: "Saldo sempre certo", text: "Faltas, remarcações e reposições entram na conta." },
-  { title: "Link pro aluno", text: "Cada aluno acompanha as próprias aulas, sem login." },
-  { title: "Lembrete automático", text: "Email quando o pacote está acabando." },
-];
-
 export default function LoginPage() {
   const [error, action, pending] = useActionState(signIn, null);
 
@@ -26,17 +19,9 @@ export default function LoginPage() {
           <h1 className="text-4xl font-semibold leading-tight tracking-tight">
             Suas aulas, sem perder a conta.
           </h1>
-          <ul className="mt-10 space-y-5">
-            {FEATURES.map((f) => (
-              <li key={f.title} className="flex gap-3">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-fg/70" />
-                <div>
-                  <div className="font-medium">{f.title}</div>
-                  <div className="text-sm opacity-75">{f.text}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <p className="mt-4 text-lg opacity-80">
+            Controle de aulas e pacotes, com um link pra cada aluno acompanhar as próprias aulas.
+          </p>
         </div>
 
         <div aria-hidden className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full border-[48px] border-accent-fg/10" />
