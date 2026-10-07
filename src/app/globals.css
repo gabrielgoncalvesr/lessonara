@@ -349,3 +349,45 @@ input[type="checkbox"] { accent-color: var(--accent); }
   .portal-package .card > :last-child { font-size: 21px; }
   .portal-footer { margin-top: 30px; }
 }
+
+/* Renovações, pagamentos e aulas em andamento. */
+.balance-warning { background: #fae9e7; color: #a75d5c; }
+.stat-renew { background: #fbefed; border-color: #f0ddda; color: #975653; }
+.stat-renew:hover { background: #f8e7e4; }
+.portal-renew { background: #fbefed; border-color: #f0ddda; color: #975653; }
+.time-field { display: flex; align-items: center; gap: 6px; }
+.time-field .input { padding-inline: 8px; min-width: 0; }
+.time-field > select:first-child { flex: 1.1; }
+.time-field > select:nth-of-type(2) { flex: 1; }
+.history-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.history-group { border-top: 1px solid var(--line); padding-block: 8px; }
+.history-group > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; font-size: 12px; font-weight: 600; text-transform: capitalize; }
+.history-group > summary::before { content: "›"; color: var(--muted); }
+.history-group[open] > summary::before { transform: rotate(90deg); }
+.history-group > summary > span:first-child { flex: 1; }
+.lesson-finished { color: #929b96; background: #fafbf9; }
+.lesson-finished .day-lesson-time { color: #a1aaa5; }
+.event-completed { color: #808a84; background: #edf0ed; }
+.event-ongoing { color: #38674e; background: #e4f1e2; font-weight: 600; }
+.lesson-ongoing { border-left: 3px solid #79a36e; padding-inline: 12px; background: #f6faf3; }
+.payment-panel { padding: 0; overflow: hidden; }
+.payment-panel .student-tools { padding: 24px; border-bottom: 1px solid var(--line); }
+.payment-row { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(120px, .8fr) minmax(140px, .8fr); align-items: center; gap: 24px; padding: 24px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.payment-row:last-child { border-bottom: 0; }
+.payment-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: start; }
+.payment-actions > .btn-ghost { font-size: 11px; width: 100%; }
+.payment-email { flex: 1; min-width: 90px; }
+.payment-email .btn-xs { width: 100%; }
+.payment-email .btn-xs:disabled { opacity: .5; cursor: default; }
+@media (max-width: 900px) { .payment-row { grid-template-columns: minmax(0, 1fr) 120px; gap: 16px; } .payment-actions { grid-column: 1 / -1; } .payment-actions > .btn-ghost { width: auto; } .payment-email { flex: 0 1 160px; } }
+@media (max-width: 767px) { .payment-row { padding: 20px; grid-template-columns: minmax(0, 1fr); } .payment-actions { grid-column: auto; } .panel-nav { gap: 2px; } .nav-link { padding: 9px 7px; font-size: 10px; } }
+
+.schedule-config { margin-top: 20px; padding-top: 24px; border-top: 1px solid var(--line); }
+.schedule-config fieldset:disabled { opacity: .5; }
+.schedule-config fieldset:disabled select, .schedule-config fieldset:disabled input, .schedule-config fieldset:disabled button { cursor: not-allowed; }
+.whatsapp-overlay { position: fixed; inset: 0; z-index: 100; background: #192a2559; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+.whatsapp-dialog { width: 100%; max-width: 480px; max-height: calc(100dvh - 40px); overflow-y: auto; }
+.whatsapp-message { margin-top: 20px; padding: 18px; border-radius: 12px; background: #f1f6ec; font-size: 13px; line-height: 1.85; white-space: pre-line; }
+.pix-copy { margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; }
+.pix-copy .label { margin-bottom: 5px; }
+.pix-copy code { font-size: 14px; user-select: all; }

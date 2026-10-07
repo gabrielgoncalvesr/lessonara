@@ -33,3 +33,17 @@ export function monthCells(month: string): string[] {
 export function calendarRange(today: string) {
   return { startDate: `${shiftMonth(today.slice(0, 7), -12)}-01`, endDate: addDays(`${shiftMonth(today.slice(0, 7), 13)}-01`, -1) };
 }
+
+export function lessonTiming(lesson: Pick<CalendarLesson, "date" | "time" | "status">, today: string, time: string, durationMinutes = 60) {
+  if (lesson.status === "desmarcada") return "cancelled";
+  if (lesson.status === "falta") return "absent";
+  const start = Date.parse(`${lesson.date}T${lesson.time}:00Z`);
+  const now = Date.parse(`${today}T${time}:00Z`);
+  if (now >= start && now < start + durationMinutes * 60_000) return "ongoing";
+  return now >= start + durationMinutes * 60_000 ? "completed" : "upcoming";
+}
+
+export function halfHourTime(value: string | null) {
+  if (!value || !/^(?:[01]\d|2[0-3]):(?:00|30)$/.test(value)) throw new Error("Escolha uma hora com minutos 00 ou 30.");
+  return value;
+}

@@ -1,3 +1,7 @@
+import { ScheduleForm } from "@/components/schedule-form";
+import { weeklyScheduleLimit } from "@/lib/schedule-rules";
+import { TimeField } from "@/components/time-field";
+import { LessonHistory } from "@/components/lesson-history";
 import { Suspense } from "react";
 import PanelLoading from "../../loading";
 import Link from "next/link";
@@ -8,16 +12,14 @@ import { CopyButton } from "@/components/copy-button";
 import { LessonList } from "@/components/lesson-list";
 import { loadLedgers, studentPrice, type Plan, type Student } from "@/lib/data";
 import { formatBRL, formatDate, WEEKDAYS } from "@/lib/dates";
-import { visibleLessons } from "@/lib/ledger";
+import { sortPackages, visibleLessons } from "@/lib/ledger";
 import { getOrigin } from "@/lib/origin";
 import { requireUser } from "@/lib/supabase/server";
 import {
   addPackage,
   addReposicao,
-  addSchedule,
   deleteEvent,
   deletePackage,
-  deleteSchedule,
   deleteStudent,
   endSchedule,
   markLesson,
@@ -42,6 +44,7 @@ async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "param
   const plan = plans.find((p) => p.id === student.plan_id);
 
   const { ledger, schedules, packages, today } = (await loadLedgers(supabase, [id])).get(id)!;
+  const scheduleLimit = weeklyScheduleLimit(sortPackages(packages).at(-1)?.lessons ?? plan?.lessons);
   const lessons = visibleLessons(ledger, today);
   const upcoming = lessons.filter((l) => !l.past);
   const history = lessons.filter((l) => l.past).reverse();
@@ -83,7 +86,7 @@ async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "param
           <summary className="cursor-pointer text-sm text-accent">+ Lançar reposição</summary>
           <form action={addReposicao.bind(null, id)} className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <input className="input" name="date" type="date" required defaultValue={today} />
-            <input className="input" name="time" type="time" required />
+            <TimeField id="reposicao-time" />
             <input className="input" name="note" placeholder="observação" />
             <button className="btn">Adicionar</button>
           </form>
@@ -92,10 +95,10 @@ async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "param
 
       <section className="card">
         <h2 className="h2">Histórico</h2>
-        <LessonList lessons={history} actions={lessonActions} />
+        <LessonHistory lessons={history} packages={packages} actions={lessonActions} />
       </section>
 
-      <section className="card space-y-3">
+      <section id="pagamentos" className="card space-y-3 scroll-mt-6">
         <h2 className="h2">Pacotes pagos</h2>
         {packages.length === 0 && <p className="text-sm text-muted">Nenhum pagamento registrado.</p>}
         <ul className="divide-y divide-line text-sm">
@@ -148,35 +151,12 @@ async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "param
                     <button className="btn-xs" title="Última aula nesse horário">encerrar</button>
                   </form>
                 )}
-                <form action={deleteSchedule.bind(null, id, s.id)}>
-                  <ConfirmButton message="Apagar o horário remove todas as aulas geradas por ele, inclusive o histórico. Use só se cadastrou errado. Continuar?">apagar</ConfirmButton>
-                </form>
+
               </span>
             </li>
           ))}
         </ul>
-        <form action={addSchedule.bind(null, id)} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <div>
-            <label className="label">Dia</label>
-            <select className="input" name="weekday" defaultValue={1}>
-              {WEEKDAYS.map((d, i) => (
-                <option key={d} value={i}>{d}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">Hora</label>
-            <input className="input" name="time" type="time" required />
-          </div>
-          <div>
-            <label className="label">A partir de</label>
-            <input className="input" name="starts_on" type="date" required defaultValue={today} />
-          </div>
-          <div className="flex items-end">
-            <button className="btn w-full">Adicionar horário</button>
-          </div>
-        </form>
-        <p className="text-xs text-muted">Mudou de dia? Encerre o horário antigo e adicione o novo. Plano 2x = dois horários.</p>
+        <ScheduleForm studentId={id} schedules={schedules} limit={scheduleLimit} today={today} />
       </section>
 
       <section className="card space-y-3">

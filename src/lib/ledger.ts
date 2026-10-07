@@ -22,6 +22,7 @@ export type Package = {
   paid_on: string;
   lessons: number;
   amount: number;
+  created_at?: string;
 };
 
 export type LessonStatus = "agendada" | "dada" | "falta" | "desmarcada" | "reposicao";
@@ -35,6 +36,8 @@ export type Lesson = {
   past: boolean;
   /** Índice do pacote (ordem de pagamento) que cobre a aula; null = sem pacote. */
   packageIndex: number | null;
+  /** ID do pacote calculado; não é um vínculo persistido no banco. */
+  packageId: string | null;
   event: LessonEvent | null;
 };
 
@@ -48,6 +51,10 @@ export type Ledger = {
   coveredUntil: string | null;
 };
 
+export function sortPackages(packages: Package[]) {
+  return [...packages].sort((a, b) => a.paid_on.localeCompare(b.paid_on) || (a.created_at ?? "").localeCompare(b.created_at ?? "") || a.id.localeCompare(b.id));
+}
+
 const MAX_WEEKS = 104;
 
 export function computeLedger(input: {
@@ -58,7 +65,7 @@ export function computeLedger(input: {
   time: string;
 }): Ledger {
   const { schedules, events, today, time } = input;
-  const packages = [...input.packages].sort((a, b) => a.paid_on.localeCompare(b.paid_on));
+  const packages = sortPackages(input.packages);
   const credits = packages.reduce((sum, p) => sum + p.lessons, 0);
   const limit = addDays(today, MAX_WEEKS * 7);
 
@@ -78,13 +85,13 @@ export function computeLedger(input: {
       const event = (byDate.get(date) ?? []).find((e) => !e.time || e.time === s.time) ?? null;
       const past = isPast(date, s.time);
       const status: LessonStatus = event ? event.kind : past ? "dada" : "agendada";
-      lessons.push({ date, time: s.time, status, counts: status !== "desmarcada", past, packageIndex: null, event });
+      lessons.push({ date, time: s.time, status, counts: status !== "desmarcada", past, packageIndex: null, packageId: null, event });
     }
   }
   for (const e of events) {
     if (e.kind !== "reposicao") continue;
     const t = e.time ?? "00:00";
-    lessons.push({ date: e.date, time: t, status: "reposicao", counts: true, past: isPast(e.date, t), packageIndex: null, event: e });
+    lessons.push({ date: e.date, time: t, status: "reposicao", counts: true, past: isPast(e.date, t), packageIndex: null, packageId: null, event: e });
   }
 
   lessons.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
@@ -98,6 +105,7 @@ export function computeLedger(input: {
     if (l.past) used++;
     if (pkg < packages.length) {
       l.packageIndex = pkg;
+      l.packageId = packages[pkg].id;
       coveredUntil = l.date;
       if (++usedInPkg === packages[pkg].lessons) {
         pkg++;

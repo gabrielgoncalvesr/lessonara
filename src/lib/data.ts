@@ -48,7 +48,7 @@ export async function loadLedgers(supabase: SupabaseClient, studentIds: string[]
   if (studentIds.length === 0) return result;
   const [schedules, packages, events] = await Promise.all([
     supabase.from("schedules").select("id, student_id, weekday, time, starts_on, ends_on").in("student_id", studentIds),
-    supabase.from("packages").select("id, student_id, paid_on, lessons, amount").in("student_id", studentIds),
+    supabase.from("packages").select("id, student_id, paid_on, lessons, amount, created_at").in("student_id", studentIds),
     supabase.from("lesson_events").select("id, student_id, date, time, kind, note").in("student_id", studentIds),
   ]);
   for (const r of [schedules, packages, events]) if (r.error) throw r.error;

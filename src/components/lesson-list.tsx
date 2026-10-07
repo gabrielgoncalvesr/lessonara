@@ -28,7 +28,7 @@ export function LessonList({
             <span className={`w-24 tabular-nums ${l.past ? "" : "font-medium"}`}>{formatDateLong(l.date)}</span>
             <span className="w-12 tabular-nums text-muted">{l.time}</span>
             <span className={`lesson-status ${s.className}`}>{s.label}</span>
-            {uncovered && <span className="rounded bg-warn/15 px-1.5 py-0.5 text-xs text-warn">sem pacote</span>}
+            {uncovered && <span className="rounded bg-bad/10 px-1.5 py-0.5 text-xs text-bad">sem pacote</span>}
             {l.event?.note && <span className="text-xs text-muted">· {l.event.note}</span>}
             {actions && <span className="ml-auto flex gap-1">{actions(l)}</span>}
           </li>

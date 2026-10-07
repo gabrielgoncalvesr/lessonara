@@ -6,7 +6,7 @@ import { Icon, type IconName } from "./icon";
 
 const links: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Visão geral", icon: "grid" },
-  { href: "/agenda", label: "Agenda", icon: "calendar" },
+  { href: "/pagamentos", label: "Pagamentos", icon: "book" },
   { href: "/alunos", label: "Alunos", icon: "users" },
   { href: "/config", label: "Configurações", icon: "settings" },
 ];

@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { StudentPortal } from "@/components/student-portal";
 import { LogoMark } from "@/components/logo";
+import { nowInTZ } from "@/lib/dates";
 import { loadLedgers, type Student } from "@/lib/data";
 import { createAdminClient } from "@/lib/supabase/server";
 
@@ -25,5 +26,5 @@ async function StudentContent({ params }: Pick<PageProps<"/a/[slug]">, "params">
   if (error) throw error;
   if (!student) notFound();
   const { ledger, packages, today } = (await loadLedgers(supabase, [student.id])).get(student.id)!;
-  return <StudentPortal name={student.name} teacherName={student.teachers?.name ?? ""} ledger={ledger} packages={packages} today={today} />;
+  return <StudentPortal name={student.name} teacherName={student.teachers?.name ?? ""} ledger={ledger} packages={packages} today={today} time={nowInTZ().time} />;
 }

@@ -3,7 +3,7 @@ import type { Ledger } from "@/lib/ledger";
 
 export function balanceTone(remaining: number) {
   if (remaining < 0) return "text-bad";
-  if (remaining <= 1) return "text-warn";
+  if (remaining <= 1) return "text-bad";
   return "text-ok";
 }
 
