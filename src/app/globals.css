@@ -503,3 +503,14 @@ input[type="checkbox"] { accent-color: var(--accent); }
  .student-material-list > li { flex-wrap: wrap; }
  .student-material-list .btn-ghost { margin-left: 56px; }
 }
+
+/* Abas da gestão individual: saldo sempre visível, formulários preservados. */
+.profile-tab-bar { margin-bottom: 24px; gap: 30px; }
+.profile-tab-panel[hidden] { display: none; }
+.profile-tab-panel { min-width: 0; scroll-margin-top: 24px; }
+.profile-tab-panel:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; border-radius: 14px; }
+.profile-lessons-grid > .card:last-child { grid-column: auto; }
+@media (max-width: 767px) {
+ .profile-tab-bar { gap: 22px; }
+ .profile-tab-bar > button { font-size: 12px; padding-block: 14px; }
+}

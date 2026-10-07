@@ -1,3 +1,4 @@
+import { StudentProfileTabs } from "@/components/student-profile-tabs";
 import { StudentDocuments } from "@/components/student-documents";
 import { ScheduleForm } from "@/components/schedule-form";
 import { weeklyScheduleLimit } from "@/lib/schedule-rules";
@@ -78,110 +79,118 @@ async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "param
       </div>
 
       <Balance ledger={ledger} />
-      <Suspense fallback={<section className="card text-sm text-muted">Carregando materiais do aluno…</section>}>
-        <StudentDocuments supabase={supabase} studentId={id} teacherId={userId} today={today} />
-      </Suspense>
-
-      <div className="detail-grid">
-      <section className="card">
-        <h2 className="h2">Próximas aulas</h2>
-        <LessonList lessons={upcoming} actions={lessonActions} />
-        <details className="mt-3">
-          <summary className="cursor-pointer text-sm text-accent">+ Lançar reposição</summary>
-          <form action={addReposicao.bind(null, id)} className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <input className="input" name="date" type="date" required defaultValue={today} />
-            <TimeField id="reposicao-time" />
-            <input className="input" name="note" placeholder="observação" />
-            <button className="btn">Adicionar</button>
-          </form>
-        </details>
-      </section>
-
-      <section className="card">
-        <h2 className="h2">Histórico</h2>
-        <LessonHistory lessons={history} packages={packages} actions={lessonActions} />
-      </section>
-
-      <section id="pagamentos" className="card space-y-3 scroll-mt-6">
-        <h2 className="h2">Pacotes pagos</h2>
-        {packages.length === 0 && <p className="text-sm text-muted">Nenhum pagamento registrado.</p>}
-        <ul className="divide-y divide-line text-sm">
-          {[...packages]
-            .sort((a, b) => b.paid_on.localeCompare(a.paid_on))
-            .map((p) => (
-              <li key={p.id} className="flex items-center gap-3 py-2">
-                <span className="tabular-nums">{formatDate(p.paid_on)}</span>
-                <span>{p.lessons} aulas</span>
-                <span className="text-muted">{formatBRL(p.amount)}</span>
-                <form action={deletePackage.bind(null, id, p.id)} className="ml-auto">
-                  <ConfirmButton message="Remover esse pagamento?">remover</ConfirmButton>
+      <StudentProfileTabs
+        aulas={
+          <div className="detail-grid profile-lessons-grid">
+            <section className="card">
+              <h2 className="h2">Próximas aulas</h2>
+              <LessonList lessons={upcoming} actions={lessonActions} />
+              <details className="mt-3">
+                <summary className="cursor-pointer text-sm text-accent">+ Lançar reposição</summary>
+                <form action={addReposicao.bind(null, id)} className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <input className="input" name="date" type="date" required defaultValue={today} />
+                  <TimeField id="reposicao-time" />
+                  <input className="input" name="note" placeholder="observação" />
+                  <button className="btn">Adicionar</button>
                 </form>
-              </li>
-            ))}
-        </ul>
-        <form action={addPackage.bind(null, id)} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <div>
-            <label className="label">Pago em</label>
-            <input className="input" name="paid_on" type="date" required defaultValue={today} />
-          </div>
-          <div>
-            <label className="label">Aulas</label>
-            <input className="input" name="lessons" type="number" min={1} required defaultValue={plan?.lessons} />
-          </div>
-          <div>
-            <label className="label">Valor (R$)</label>
-            <input className="input" name="amount" type="number" required defaultValue={studentPrice(student, plan)} />
-          </div>
-          <div className="flex items-end">
-            <button className="btn w-full">Registrar pagamento</button>
-          </div>
-        </form>
-      </section>
+              </details>
+            </section>
 
-      <section className="card space-y-3">
-        <h2 className="h2">Horário fixo</h2>
-        <ul className="divide-y divide-line text-sm">
-          {schedules.map((s) => (
-            <li key={s.id} className="flex flex-wrap items-center gap-3 py-2">
-              <span className="font-medium">{WEEKDAYS[s.weekday]} {s.time}</span>
-              <span className="text-muted">
-                desde {formatDate(s.starts_on)}
-                {s.ends_on && ` até ${formatDate(s.ends_on)}`}
-              </span>
-              <span className="ml-auto flex gap-1">
-                {!s.ends_on && (
-                  <form action={endSchedule.bind(null, id, s.id)} className="flex gap-1">
-                    <input className="input py-1 text-xs" name="ends_on" type="date" required defaultValue={today} />
-                    <button className="btn-xs" title="Última aula nesse horário">encerrar</button>
-                  </form>
-                )}
+            <section className="card">
+              <h2 className="h2">Histórico</h2>
+              <LessonHistory lessons={history} packages={packages} actions={lessonActions} />
+            </section>
+          </div>
+        }
+        pacotes={
+          <section id="pagamentos" className="card space-y-3 scroll-mt-6">
+            <h2 className="h2">Pacotes pagos</h2>
+            {packages.length === 0 && <p className="text-sm text-muted">Nenhum pagamento registrado.</p>}
+            <ul className="divide-y divide-line text-sm">
+              {[...packages]
+                .sort((a, b) => b.paid_on.localeCompare(a.paid_on))
+                .map((p) => (
+                  <li key={p.id} className="flex items-center gap-3 py-2">
+                    <span className="tabular-nums">{formatDate(p.paid_on)}</span>
+                    <span>{p.lessons} aulas</span>
+                    <span className="text-muted">{formatBRL(p.amount)}</span>
+                    <form action={deletePackage.bind(null, id, p.id)} className="ml-auto">
+                      <ConfirmButton message="Remover esse pagamento?">remover</ConfirmButton>
+                    </form>
+                  </li>
+                ))}
+            </ul>
+            <form action={addPackage.bind(null, id)} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div>
+                <label className="label">Pago em</label>
+                <input className="input" name="paid_on" type="date" required defaultValue={today} />
+              </div>
+              <div>
+                <label className="label">Aulas</label>
+                <input className="input" name="lessons" type="number" min={1} required defaultValue={plan?.lessons} />
+              </div>
+              <div>
+                <label className="label">Valor (R$)</label>
+                <input className="input" name="amount" type="number" required defaultValue={studentPrice(student, plan)} />
+              </div>
+              <div className="flex items-end">
+                <button className="btn w-full">Registrar pagamento</button>
+              </div>
+            </form>
+          </section>
+        }
+        horarios={
+          <section className="card space-y-3">
+            <h2 className="h2">Horário fixo</h2>
+            <ul className="divide-y divide-line text-sm">
+              {schedules.map((s) => (
+                <li key={s.id} className="flex flex-wrap items-center gap-3 py-2">
+                  <span className="font-medium">{WEEKDAYS[s.weekday]} {s.time}</span>
+                  <span className="text-muted">
+                    desde {formatDate(s.starts_on)}
+                    {s.ends_on && ` até ${formatDate(s.ends_on)}`}
+                  </span>
+                  <span className="ml-auto flex gap-1">
+                    {!s.ends_on && (
+                      <form action={endSchedule.bind(null, id, s.id)} className="flex gap-1">
+                        <input className="input py-1 text-xs" name="ends_on" type="date" required defaultValue={today} />
+                        <button className="btn-xs" title="Última aula nesse horário">encerrar</button>
+                      </form>
+                    )}
 
-              </span>
-            </li>
-          ))}
-        </ul>
-        <ScheduleForm studentId={id} schedules={schedules} limit={scheduleLimit} today={today} />
-      </section>
-
-      <section className="card space-y-3">
-        <h2 className="h2">Dados do aluno</h2>
-        <form action={updateStudent.bind(null, id)} className="space-y-3">
-          <StudentFields student={student} plans={plans} />
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="active" defaultChecked={student.active} /> Ativo (recebe lembretes)
-          </label>
-          <button className="btn">Salvar</button>
-        </form>
-        <div className="flex flex-wrap gap-2 border-t border-line pt-3">
-          <form action={regenerateLink.bind(null, id)}>
-            <ConfirmButton message="O link antigo vai parar de funcionar. Continuar?">gerar novo link</ConfirmButton>
-          </form>
-          <form action={deleteStudent.bind(null, id)}>
-            <ConfirmButton message="Excluir o aluno e todo o histórico? Não tem volta." className="btn-xs text-bad">excluir aluno</ConfirmButton>
-          </form>
-        </div>
-      </section>
-      </div>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <ScheduleForm studentId={id} schedules={schedules} limit={scheduleLimit} today={today} />
+          </section>
+        }
+        dados={
+          <section className="card space-y-3">
+            <h2 className="h2">Dados do aluno</h2>
+            <form action={updateStudent.bind(null, id)} className="space-y-3">
+              <StudentFields student={student} plans={plans} />
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="active" defaultChecked={student.active} /> Ativo (recebe lembretes)
+              </label>
+              <button className="btn">Salvar</button>
+            </form>
+            <div className="flex flex-wrap gap-2 border-t border-line pt-3">
+              <form action={regenerateLink.bind(null, id)}>
+                <ConfirmButton message="O link antigo vai parar de funcionar. Continuar?">gerar novo link</ConfirmButton>
+              </form>
+              <form action={deleteStudent.bind(null, id)}>
+                <ConfirmButton message="Excluir o aluno e todo o histórico? Não tem volta." className="btn-xs text-bad">excluir aluno</ConfirmButton>
+              </form>
+            </div>
+          </section>
+        }
+        materiais={
+          <Suspense fallback={<section className="card text-sm text-muted">Carregando materiais do aluno…</section>}>
+            <StudentDocuments supabase={supabase} studentId={id} teacherId={userId} today={today} />
+          </Suspense>
+        }
+      />
     </main>
   );
 }
