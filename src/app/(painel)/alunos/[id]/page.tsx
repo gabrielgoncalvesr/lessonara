@@ -1,3 +1,4 @@
+import { StudentDocuments } from "@/components/student-documents";
 import { ScheduleForm } from "@/components/schedule-form";
 import { weeklyScheduleLimit } from "@/lib/schedule-rules";
 import { TimeField } from "@/components/time-field";
@@ -34,7 +35,7 @@ export default function StudentPage({ params }: PageProps<"/alunos/[id]">) {
 
 async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "params">) {
   const { id } = await params;
-  const { supabase } = await requireUser();
+  const { supabase, userId } = await requireUser();
   const [{ data: student }, { data: plansData }] = await Promise.all([
     supabase.from("students").select("*").eq("id", id).maybeSingle<Student>(),
     supabase.from("plans").select("*").order("lessons"),
@@ -77,6 +78,9 @@ async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "param
       </div>
 
       <Balance ledger={ledger} />
+      <Suspense fallback={<section className="card text-sm text-muted">Carregando materiais do aluno…</section>}>
+        <StudentDocuments supabase={supabase} studentId={id} teacherId={userId} today={today} />
+      </Suspense>
 
       <div className="detail-grid">
       <section className="card">

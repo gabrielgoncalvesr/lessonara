@@ -1,3 +1,4 @@
+import { loadStudentShares } from "@/lib/documents";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
@@ -26,5 +27,7 @@ async function StudentContent({ params }: Pick<PageProps<"/a/[slug]">, "params">
   if (error) throw error;
   if (!student) notFound();
   const { ledger, packages, today } = (await loadLedgers(supabase, [student.id])).get(student.id)!;
-  return <StudentPortal name={student.name} teacherName={student.teachers?.name ?? ""} ledger={ledger} packages={packages} today={today} time={nowInTZ().time} />;
+  const shared = await loadStudentShares(supabase, student.id, student.teacher_id, today, true);
+  const materials = shared.shares.map(({ id, title, subject, fileName, byteSize, expiresOn }) => ({ id, title, subject, fileName, byteSize, expiresOn }));
+  return <StudentPortal slug={slug} materials={materials} name={student.name} teacherName={student.teachers?.name ?? ""} ledger={ledger} packages={packages} today={today} time={nowInTZ().time} />;
 }

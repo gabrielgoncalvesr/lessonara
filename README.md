@@ -12,6 +12,8 @@ Controle de aulas e pacotes para professores particulares. A professora cadastra
 - **Reposição**: aula extra lançada manualmente. Conta.
 - **Lembrete**: email diário para aluno ativo com ≤ 1 aula restante, uma vez por pacote.
 
+- **Materiais**: um arquivo privado na biblioteca pode ser compartilhado com vários alunos, com prazo individual ou acesso sem prazo. A validade inclui o dia escolhido, no fuso de São Paulo.
+
 Lógica do saldo em `src/lib/ledger.ts` (testes: `pnpm test`).
 
 ## Setup
@@ -20,9 +22,10 @@ Lógica do saldo em `src/lib/ledger.ts` (testes: `pnpm test`).
 
 1. Crie um projeto em supabase.com (free).
 2. SQL Editor → cole e rode `supabase/migrations/0001_init.sql`.
-3. Authentication → Sign In / Providers → desligue **Allow new users to sign up** (só você cria contas).
-4. Authentication → Users → **Add user** com email e senha da professora (marque auto-confirm).
-5. Project Settings → API Keys: copie a publishable key e a secret key.
+3. Para a biblioteca, rode também `supabase/migrations/0003_documents.sql`. Ela cria o bucket privado, as tabelas, as políticas de acesso e a reserva de espaço.
+4. Authentication → Sign In / Providers → desligue **Allow new users to sign up** (só você cria contas).
+5. Authentication → Users → **Add user** com email e senha da professora (marque auto-confirm).
+6. Project Settings → API Keys: copie a publishable key e a secret key.
 
 ### 2. Resend (emails)
 
@@ -55,8 +58,20 @@ curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/lemb
 | Rota | Quem |
 |---|---|
 | `/login` | professora |
-| `/` | lista de alunos e saldo |
+| `/` | calendário e aulas do dia |
+| `/alunos` | lista de alunos |
+| `/pagamentos` | renovação e cobranças |
+| `/financeiro` | entradas e evolução dos recebimentos |
+| `/documentos` | biblioteca privada de materiais |
 | `/alunos/[id]` | agenda, pacotes, falta/desmarcada/reposição |
 | `/config` | nome e preços padrão |
 | `/a/[slug]` | página pública do aluno (link aleatório, sem login) |
 | `/api/cron/lembretes` | cron diário |
+
+## Biblioteca de materiais
+
+Envie pela aba Documentos e compartilhe no perfil do aluno. O link público oferece uma aba Materiais com os arquivos liberados. Cada aluno tem sua própria validade; compartilhar de novo atualiza o prazo sem duplicar o arquivo.
+
+O upload vai diretamente do navegador ao Supabase com uma autorização temporária; o arquivo não atravessa uma Server Action da Vercel. O limite é 20 MB por arquivo e a biblioteca reserva até 1 GB por professora, incluindo envios incompletos. A cota do plano Supabase é compartilhada pelo projeto. Remova envios incompletos para liberar a reserva.
+
+Downloads exigem uma sessão da professora ou o link aleatório do aluno com um compartilhamento válido. O bucket é privado e as URLs assinadas duram no máximo 60 segundos. Excluir um documento remove todos os compartilhamentos; encerrar um acesso individual mantém o arquivo e os demais alunos. Um arquivo já baixado não pode ser revogado.

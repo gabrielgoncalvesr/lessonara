@@ -1,0 +1,17 @@
+import { Suspense } from "react";
+import PanelLoading from "../loading";
+import { requireUser } from "@/lib/supabase/server";
+import { nowInTZ } from "@/lib/dates";
+import { loadDocumentLibrary } from "@/lib/documents";
+import { DocumentLibrary } from "@/components/document-library";
+
+export default function DocumentsPage() {
+  return <Suspense fallback={<PanelLoading />}><LibraryData /></Suspense>;
+}
+
+async function LibraryData() {
+  const { supabase, userId } = await requireUser();
+  const { today } = nowInTZ();
+  const library = await loadDocumentLibrary(supabase, userId, today);
+  return <DocumentLibrary documents={library.documents} ready={library.ready} />;
+}

@@ -452,3 +452,54 @@ input[type="checkbox"] { accent-color: var(--accent); }
   .finance-table td, .finance-table th { padding-inline: 10px; }
   .finance-table { font-size: 11px; }
 }
+
+/* Biblioteca privada e compartilhamentos de materiais. */
+.document-storage { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 24px; }
+.document-storage h2 { font-size: 16px; font-weight: 600; }
+.document-storage p { margin-top: 7px; font-size: 11px; color: var(--muted); }
+.document-storage-meter { width: 250px; max-width: 100%; font-size: 12px; font-weight: 500; }
+.document-storage-meter .package-progress { margin-top: 12px; }
+.document-upload { margin-bottom: 24px; }
+.document-upload-fields { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, .8fr) auto; gap: 14px; align-items: end; }
+.document-upload-fields:disabled { opacity: .5; }
+.document-upload input[type=file] { padding: 10px; font-size: 11px; }
+.document-upload input[type=file]::file-selector-button { padding: 6px 10px; margin-right: 9px; border: 0; border-radius: 6px; background: #edf3e8; color: var(--accent); cursor: pointer; }
+.document-upload-progress { width: 100%; height: 5px; margin-top: 18px; accent-color: var(--accent); }
+.document-library-tools { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-block: 24px; }
+.document-library-tools .search-field { width: 300px; padding: 12px; }
+.document-library-tools > .input { width: 220px; max-width: 100%; font-size: 12px; }
+.document-item { display: flex; align-items: start; gap: 18px; padding: 24px 0; border-top: 1px solid var(--line); }
+.document-type { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; width: 50px; min-height: 58px; background: #edf3e8; color: var(--accent); border-radius: 11px; font-size: 9px; font-weight: 600; }
+.document-item-content { flex: 1; min-width: 0; }
+.document-item-content h3, .student-document-item h3 { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.document-filename { color: var(--muted); font-size: 11px; margin-top: 7px; overflow-wrap: anywhere; }
+.document-item-actions { display: flex; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+.document-item-actions button:disabled { opacity: .5; cursor: default; }
+.document-share-form { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 12px; align-items: end; padding-bottom: 20px; }
+.document-share-note { grid-column: 1 / -1; color: var(--muted); font-size: 10px; line-height: 1.8; }
+.document-sharing-empty { padding-block: 10px; }
+.student-document-item { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line); padding: 22px 0; }
+.student-document-controls { display: flex; flex-direction: column; align-items: start; gap: 12px; min-width: 300px; }
+.student-document-controls .input { padding-block: 8px; font-size: 12px; }
+.student-documents .section-heading { flex-wrap: wrap; }
+.student-material-list > li { display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--line); padding: 23px 0; font-size: 13px; }
+.student-material-list h3 { overflow-wrap: anywhere; }
+.student-material-list .btn-ghost { font-size: 12px; flex-shrink: 0; }
+.portal-tabs { overflow-x: auto; }
+.portal-tabs > button { flex-shrink: 0; white-space: nowrap; }
+@media (max-width: 1200px) { .document-upload-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } .document-item { flex-wrap: wrap; } .document-item-actions { margin-left: 68px; } }
+@media (max-width: 767px) {
+ .document-storage { flex-direction: column; align-items: start; gap: 20px; }
+ .document-storage-meter { width: 100%; }
+ .document-upload-fields, .document-share-form { grid-template-columns: minmax(0, 1fr); }
+ .document-library-tools { align-items: stretch; flex-direction: column; gap: 10px; }
+ .document-library-tools .search-field, .document-library-tools > .input { width: 100%; }
+ .document-item { gap: 12px; }
+ .document-type { width: 40px; min-height: 48px; }
+ .document-item-actions { margin-left: 52px; }
+ .student-document-item { flex-direction: column; gap: 18px; }
+ .student-document-controls { min-width: 0; width: 100%; }
+ .student-document-controls form { width: 100%; }
+ .student-material-list > li { flex-wrap: wrap; }
+ .student-material-list .btn-ghost { margin-left: 56px; }
+}

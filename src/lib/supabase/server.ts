@@ -25,7 +25,7 @@ export async function createClient() {
   });
 }
 
-/** Cliente com a secret key: ignora RLS. Usar só na página pública do aluno e no cron. */
+/** Cliente com a secret key: ignora RLS. Usar na página/link do aluno e no cron, com autorização explícita no servidor. */
 export function createAdminClient() {
   return createSupabaseClient(url, process.env.SUPABASE_SECRET_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
