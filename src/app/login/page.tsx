@@ -5,7 +5,7 @@ import { LogoMark } from "@/components/logo";
 import { signIn } from "./actions";
 
 export default function LoginPage() {
-  const [error, action, pending] = useActionState(signIn, null);
+  const [state, action, pending] = useActionState(signIn, null);
 
   return (
     <main className="grid min-h-screen lg:grid-cols-2">
@@ -41,15 +41,15 @@ export default function LoginPage() {
           <form action={action} className="mt-8 space-y-4">
             <div>
               <label className="label" htmlFor="email">Email</label>
-              <input className="input py-2.5" id="email" name="email" type="email" required autoComplete="email" autoFocus />
+              <input className="input py-2.5" id="email" name="email" type="email" required autoComplete="email" autoFocus defaultValue={state?.email} key={state?.email} />
             </div>
             <div>
               <label className="label" htmlFor="password">Senha</label>
               <input className="input py-2.5" id="password" name="password" type="password" required autoComplete="current-password" />
             </div>
-            {error && (
+            {state?.error && (
               <p role="alert" className="rounded-lg border border-bad/30 bg-bad/10 px-3 py-2 text-sm text-bad">
-                {error}
+                {state.error}
               </p>
             )}
             <button className="btn w-full py-2.5" disabled={pending}>

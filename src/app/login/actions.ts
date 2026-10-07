@@ -3,13 +3,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export async function signIn(_prev: string | null, formData: FormData): Promise<string | null> {
+export type SignInState = { error: string; email: string } | null;
+
+export async function signIn(_prev: SignInState, formData: FormData): Promise<SignInState> {
+  const email = String(formData.get("email"));
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
-    email: String(formData.get("email")),
-    password: String(formData.get("password")),
-  });
-  if (error) return "Email ou senha inválidos.";
+  const { error } = await supabase.auth.signInWithPassword({ email, password: String(formData.get("password")) });
+  if (error) return { error: "Email ou senha inválidos.", email };
   redirect("/");
 }
 
