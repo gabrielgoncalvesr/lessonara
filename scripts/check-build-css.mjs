@@ -1,18 +1,26 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const html = readFileSync(join(root, ".next/server/app/login.html"), "utf8");
-const sheets = [...html.matchAll(/href="([^\"]+\.css(?:\?[^\"]*)?)"/g)].map((match) => match[1]);
-if (!sheets.length) throw new Error("Login build contains no CSS links.");
-const css = sheets.map((href) => {
-  const pathname = decodeURIComponent(href.split("?")[0]);
-  if (!pathname.startsWith("/_next/static/")) throw new Error(`Unexpected stylesheet path: ${pathname}`);
-  return readFileSync(join(root, ".next", pathname.slice("/_next/".length)), "utf8");
-}).join("\n");
-for (const selector of [".login-art", ".login-form-side", ".sidebar", ".calendar-cell"]) {
-  if (!css.includes(selector)) throw new Error(`Production stylesheet is missing ${selector}.`);
+
+function stylesheets(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const filename = join(directory, entry.name);
+    return entry.isDirectory() ? stylesheets(filename) : entry.name.endsWith(".css") ? [filename] : [];
+  });
 }
-if (css.includes("#141412")) throw new Error("Production stylesheet contains the obsolete dark theme.");
+
+// Prerendered HTML locations differ across local builds and the Vercel adapter.
+// Check the emitted stylesheet itself, independent of the HTML output layout.
+const expected = [".login-art", ".login-form-side", ".sidebar", ".calendar-cell"];
+const directory = [join(root, ".vercel/output/static"), join(root, ".next/static")].find(existsSync);
+if (!directory) throw new Error("Production build contains no static output directory.");
+const files = stylesheets(directory);
+if (!files.length) throw new Error("Production build contains no CSS assets.");
+const currentStylesheet = files.find((filename) => {
+  const css = readFileSync(filename, "utf8");
+  return expected.every((selector) => css.includes(selector)) && !css.includes("#141412");
+});
+if (!currentStylesheet) throw new Error("Production CSS is missing the current login, sidebar or calendar styles.");
 console.log("Production CSS verified: login, sidebar and calendar styles are present.");
