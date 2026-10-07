@@ -5,7 +5,8 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 // Roda 1x por dia (vercel.json). Também mantém o projeto do Supabase ativo no plano free.
 export async function GET(request: Request) {
-  if (request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
     return new Response("Unauthorized", { status: 401 });
   }
 
