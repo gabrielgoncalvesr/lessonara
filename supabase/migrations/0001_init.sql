@@ -3,10 +3,19 @@ create table public.teachers (
   id uuid primary key references auth.users on delete cascade,
   name text not null default '',
   email text not null,
-  price_1x integer not null default 300,
-  price_2x integer not null default 500,
   created_at timestamptz not null default now()
 );
+
+-- Planos de cada professor: pacote de N aulas por um preço.
+create table public.plans (
+  id uuid primary key default gen_random_uuid(),
+  teacher_id uuid not null references public.teachers on delete cascade,
+  name text not null,
+  lessons integer not null check (lessons > 0),
+  price integer not null,
+  created_at timestamptz not null default now()
+);
+create index on public.plans (teacher_id);
 
 create table public.students (
   id uuid primary key default gen_random_uuid(),
@@ -14,7 +23,7 @@ create table public.students (
   slug text not null unique,
   name text not null,
   email text,
-  plan text not null default '1x' check (plan in ('1x', '2x')),
+  plan_id uuid references public.plans on delete set null,
   price_override integer,
   active boolean not null default true,
   notes text,
@@ -75,6 +84,7 @@ grant select, insert, update, delete on all tables in schema public to authentic
 
 -- RLS: professor só enxerga os próprios dados. Página do aluno e cron usam service role.
 alter table public.teachers enable row level security;
+alter table public.plans enable row level security;
 alter table public.students enable row level security;
 alter table public.schedules enable row level security;
 alter table public.packages enable row level security;
@@ -83,6 +93,9 @@ alter table public.reminders enable row level security;
 
 create policy "own teacher" on public.teachers
   for all using (id = auth.uid()) with check (id = auth.uid());
+
+create policy "own plans" on public.plans
+  for all using (teacher_id = auth.uid()) with check (teacher_id = auth.uid());
 
 create policy "own students" on public.students
   for all using (teacher_id = auth.uid()) with check (teacher_id = auth.uid());
@@ -108,6 +121,8 @@ as $$
 begin
   insert into public.teachers (id, email, name)
   values (new.id, new.email, coalesce(new.raw_user_meta_data ->> 'name', ''));
+  insert into public.plans (teacher_id, name, lessons, price)
+  values (new.id, '1x por semana', 4, 300), (new.id, '2x por semana', 8, 500);
   return new;
 end;
 $$;

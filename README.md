@@ -4,7 +4,8 @@ Controle de aulas e pacotes para professores particulares. A professora cadastra
 
 ## Regras
 
-- **Pacote**: 4 aulas (1x/semana) ou 8 aulas (2x/semana). Vale até ser usado. Valor padrão em Configurações, com override por aluno.
+- **Planos**: cada professor cria os seus (pacote de N aulas por um preço). Conta nova já vem com "1x por semana" (4 aulas, R$300) e "2x por semana" (8 aulas, R$500). Valor pode ter override por aluno.
+- **Pacote**: vale até ser usado; guarda aulas e valor do momento do pagamento.
 - **Agenda fixa**: aulas são geradas a partir do horário semanal. Aula que já passou conta como dada.
 - **Falta**: aviso em cima da hora ou não compareceu. Conta como aula.
 - **Desmarcada**: aviso com antecedência ou professora cancelou. Não conta.

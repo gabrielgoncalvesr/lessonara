@@ -23,7 +23,7 @@ function studentFields(f: FormData) {
   return {
     name: str(f, "name") ?? "Sem nome",
     email: str(f, "email"),
-    plan: str(f, "plan") === "2x" ? "2x" : "1x",
+    plan_id: str(f, "plan_id"),
     price_override: int(f, "price_override"),
     notes: str(f, "notes"),
   };
@@ -136,8 +136,30 @@ export async function updateTeacher(f: FormData) {
   check(
     await supabase
       .from("teachers")
-      .update({ name: str(f, "name") ?? "", price_1x: int(f, "price_1x") ?? 300, price_2x: int(f, "price_2x") ?? 500 })
+      .update({ name: str(f, "name") ?? "" })
       .eq("id", userId),
   );
   revalidatePath("/", "layout");
+}
+
+function planFields(f: FormData) {
+  return { name: str(f, "name") ?? "Plano", lessons: int(f, "lessons") ?? 1, price: int(f, "price") ?? 0 };
+}
+
+export async function createPlan(f: FormData) {
+  const { supabase, userId } = await requireUser();
+  check(await supabase.from("plans").insert({ ...planFields(f), teacher_id: userId }));
+  revalidatePath("/config");
+}
+
+export async function updatePlan(id: string, f: FormData) {
+  const { supabase } = await requireUser();
+  check(await supabase.from("plans").update(planFields(f)).eq("id", id));
+  revalidatePath("/config");
+}
+
+export async function deletePlan(id: string) {
+  const { supabase } = await requireUser();
+  check(await supabase.from("plans").delete().eq("id", id));
+  revalidatePath("/config");
 }

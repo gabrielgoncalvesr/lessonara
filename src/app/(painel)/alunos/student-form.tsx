@@ -1,6 +1,7 @@
-import type { Student } from "@/lib/data";
+import type { Plan, Student } from "@/lib/data";
+import { formatBRL } from "@/lib/dates";
 
-export function StudentFields({ student }: { student?: Student }) {
+export function StudentFields({ student, plans }: { student?: Student; plans: Plan[] }) {
   return (
     <>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -14,14 +15,18 @@ export function StudentFields({ student }: { student?: Student }) {
         </div>
         <div>
           <label className="label">Plano</label>
-          <select className="input" name="plan" defaultValue={student?.plan ?? "1x"}>
-            <option value="1x">1x por semana (4 aulas)</option>
-            <option value="2x">2x por semana (8 aulas)</option>
+          <select className="input" name="plan_id" defaultValue={student?.plan_id ?? plans[0]?.id ?? ""}>
+            <option value="">Sem plano</option>
+            {plans.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} · {p.lessons} aulas · {formatBRL(p.price)}
+              </option>
+            ))}
           </select>
         </div>
         <div>
           <label className="label">Valor diferente (opcional)</label>
-          <input className="input" name="price_override" type="number" placeholder="usa o padrão do plano" defaultValue={student?.price_override ?? ""} />
+          <input className="input" name="price_override" type="number" placeholder="usa o valor do plano" defaultValue={student?.price_override ?? ""} />
         </div>
       </div>
       <div>

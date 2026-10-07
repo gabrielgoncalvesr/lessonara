@@ -2,15 +2,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { nowInTZ } from "./dates";
 import { computeLedger, type Ledger, type LessonEvent, type Package, type Schedule } from "./ledger";
 
-export type Plan = "1x" | "2x";
-
 export type Student = {
   id: string;
   teacher_id: string;
   slug: string;
   name: string;
   email: string | null;
-  plan: Plan;
+  plan_id: string | null;
   price_override: number | null;
   active: boolean;
   notes: string | null;
@@ -20,16 +18,19 @@ export type Teacher = {
   id: string;
   name: string;
   email: string;
-  price_1x: number;
-  price_2x: number;
+};
+
+export type Plan = {
+  id: string;
+  name: string;
+  lessons: number;
+  price: number;
 };
 
 export type ScheduleRow = Schedule & { id: string };
 
-export const PLAN_LESSONS: Record<Plan, number> = { "1x": 4, "2x": 8 };
-
-export function studentPrice(student: Student, teacher: Teacher): number {
-  return student.price_override ?? (student.plan === "2x" ? teacher.price_2x : teacher.price_1x);
+export function studentPrice(student: Student, plan: Plan | undefined): number | undefined {
+  return student.price_override ?? plan?.price;
 }
 
 const trimTime = (t: string | null) => (t ? t.slice(0, 5) : t);

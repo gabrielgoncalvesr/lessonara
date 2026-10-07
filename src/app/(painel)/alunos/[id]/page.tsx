@@ -4,7 +4,7 @@ import { Balance } from "@/components/balance";
 import { ConfirmButton } from "@/components/confirm-button";
 import { CopyButton } from "@/components/copy-button";
 import { LessonList } from "@/components/lesson-list";
-import { loadLedgers, PLAN_LESSONS, studentPrice, type Student, type Teacher } from "@/lib/data";
+import { loadLedgers, studentPrice, type Plan, type Student } from "@/lib/data";
 import { formatBRL, formatDate, WEEKDAYS } from "@/lib/dates";
 import { visibleLessons } from "@/lib/ledger";
 import { getOrigin } from "@/lib/origin";
@@ -26,12 +26,14 @@ import { StudentFields } from "../student-form";
 
 export default async function StudentPage({ params }: PageProps<"/alunos/[id]">) {
   const { id } = await params;
-  const { supabase, userId } = await requireUser();
-  const [{ data: student }, { data: teacher }] = await Promise.all([
+  const { supabase } = await requireUser();
+  const [{ data: student }, { data: plansData }] = await Promise.all([
     supabase.from("students").select("*").eq("id", id).maybeSingle<Student>(),
-    supabase.from("teachers").select("*").eq("id", userId).single<Teacher>(),
+    supabase.from("plans").select("*").order("lessons"),
   ]);
-  if (!student || !teacher) notFound();
+  if (!student) notFound();
+  const plans = (plansData ?? []) as Plan[];
+  const plan = plans.find((p) => p.id === student.plan_id);
 
   const { ledger, schedules, packages, today } = (await loadLedgers(supabase, [id])).get(id)!;
   const lessons = visibleLessons(ledger, today);
@@ -110,11 +112,11 @@ export default async function StudentPage({ params }: PageProps<"/alunos/[id]">)
           </div>
           <div>
             <label className="label">Aulas</label>
-            <input className="input" name="lessons" type="number" min={1} required defaultValue={PLAN_LESSONS[student.plan]} />
+            <input className="input" name="lessons" type="number" min={1} required defaultValue={plan?.lessons} />
           </div>
           <div>
             <label className="label">Valor (R$)</label>
-            <input className="input" name="amount" type="number" required defaultValue={studentPrice(student, teacher)} />
+            <input className="input" name="amount" type="number" required defaultValue={studentPrice(student, plan)} />
           </div>
           <div className="flex items-end">
             <button className="btn w-full">Registrar pagamento</button>
@@ -173,7 +175,7 @@ export default async function StudentPage({ params }: PageProps<"/alunos/[id]">)
       <section className="card space-y-3">
         <h2 className="h2">Dados do aluno</h2>
         <form action={updateStudent.bind(null, id)} className="space-y-3">
-          <StudentFields student={student} />
+          <StudentFields student={student} plans={plans} />
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="active" defaultChecked={student.active} /> Ativo (recebe lembretes)
           </label>

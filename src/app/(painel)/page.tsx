@@ -8,9 +8,9 @@ import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("students").select("*").order("name");
+  const { data, error } = await supabase.from("students").select("*, plans(name)").order("name");
   if (error) throw error;
-  const students = data as Student[];
+  const students = data as (Student & { plans: { name: string } | null })[];
   const ledgers = await loadLedgers(supabase, students.map((s) => s.id));
   const origin = await getOrigin();
 
@@ -37,7 +37,7 @@ export default async function Home() {
             <Link href={`/alunos/${s.id}`} className="min-w-0 flex-1">
               <div className="font-medium">{s.name}</div>
               <div className="text-xs text-muted">
-                {s.plan} na semana
+                {s.plans?.name ?? "Sem plano"}
                 {next && ` · próxima ${formatDateLong(next.date)} ${next.time}`}
                 {!s.active && " · inativo"}
               </div>
