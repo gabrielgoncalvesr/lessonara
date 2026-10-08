@@ -1,0 +1,55 @@
+/* Prévia de identidade visual, limitada à página de login. */
+.login {
+  --accent: #786095;
+  --fg: #3c3347;
+  --muted: #807589;
+  --line: #eae5ef;
+  color: var(--fg);
+}
+
+.login :global(.login-art) {
+  background: #f0ebf7;
+}
+
+.login :global(.brand-dot) {
+  color: #a28abc;
+}
+
+.login :global(.login-story > p),
+.login :global(.login-art-footer) {
+  color: #807389;
+}
+
+.login :global(.login-preview) {
+  box-shadow: 0 18px 45px #78609512;
+}
+
+.login :global(.login-preview)::after {
+  border-color: #b9a5ce;
+}
+
+.login .brandIcon {
+  background: #eee7f5;
+  color: #8b71a6;
+}
+
+.login :global(.btn) {
+  box-shadow: 0 3px 7px #7860951a;
+}
+
+.login :global(.btn):hover {
+  background: #665080;
+}
+
+.login :global(.input):focus {
+  border-color: #a58cbd;
+  box-shadow: 0 0 0 3px #f1ebf7;
+}
+
+.login :global(.input)::placeholder {
+  color: #93899a;
+}
+
+.login :focus-visible {
+  outline-color: #b19bc7;
+}
