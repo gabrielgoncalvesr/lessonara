@@ -25,7 +25,9 @@ export type Package = {
   created_at?: string;
 };
 
-export type LessonStatus = "agendada" | "dada" | "falta" | "desmarcada" | "reposicao";
+export type Holiday = { date: string; name: string };
+export type HolidayPolicy = "consume" | "preserve";
+export type LessonStatus = "agendada" | "dada" | "falta" | "desmarcada" | "reposicao" | "feriado";
 
 export type Lesson = {
   date: string;
@@ -39,6 +41,7 @@ export type Lesson = {
   /** ID do pacote calculado; não é um vínculo persistido no banco. */
   packageId: string | null;
   event: LessonEvent | null;
+  holidayName?: string | null;
 };
 
 export type Ledger = {
@@ -59,12 +62,15 @@ const MAX_WEEKS = 104;
 
 export function computeLedger(input: {
   schedules: Schedule[];
+  holidays?: Holiday[];
+  holidayPolicy?: HolidayPolicy;
   events: LessonEvent[];
   packages: Package[];
   today: string;
   time: string;
 }): Ledger {
   const { schedules, events, today, time } = input;
+  const holidays = new Map((input.holidays ?? []).map((holiday) => [holiday.date, holiday.name]));
   const packages = sortPackages(input.packages);
   const credits = packages.reduce((sum, p) => sum + p.lessons, 0);
   const limit = addDays(today, MAX_WEEKS * 7);
@@ -84,8 +90,10 @@ export function computeLedger(input: {
     for (; date <= end; date = addDays(date, 7)) {
       const event = (byDate.get(date) ?? []).find((e) => !e.time || e.time === s.time) ?? null;
       const past = isPast(date, s.time);
-      const status: LessonStatus = event ? event.kind : past ? "dada" : "agendada";
-      lessons.push({ date, time: s.time, status, counts: status !== "desmarcada", past, packageIndex: null, packageId: null, event });
+      const holidayName = holidays.get(date) ?? null;
+      const status: LessonStatus = event ? event.kind : holidayName ? "feriado" : past ? "dada" : "agendada";
+      const counts = status !== "desmarcada" && (status !== "feriado" || input.holidayPolicy === "consume");
+      lessons.push({ date, time: s.time, status, counts, past, packageIndex: null, packageId: null, event, holidayName });
     }
   }
   for (const e of events) {

@@ -53,7 +53,7 @@ async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "param
   const link = `${(await getOrigin())}/a/${student.slug}`;
 
   const lessonActions = (l: (typeof lessons)[number]) =>
-    l.event ? (
+    l.status === "feriado" ? null : l.event ? (
       <form action={deleteEvent.bind(null, id, l.event.id)}>
         <button className="btn-xs">desfazer</button>
       </form>

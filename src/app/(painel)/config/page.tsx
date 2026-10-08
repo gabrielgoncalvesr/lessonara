@@ -1,3 +1,6 @@
+import { HolidaySettingsForm } from "@/components/holiday-settings";
+import { loadHolidayRules } from "@/lib/holiday-data";
+import { nowInTZ } from "@/lib/dates";
 import { Suspense } from "react";
 import PanelLoading from "../loading";
 import { createPlan, deletePlan, updatePlan, updateTeacher } from "../actions";
@@ -25,6 +28,10 @@ async function PageContent() {
     supabase.from("teachers").select("*").eq("id", userId).single<Teacher>(),
     supabase.from("plans").select("*").order("lessons"),
   ]);
+  const rules = await loadHolidayRules(supabase, [userId]);
+  const settings = rules.settings[0] ?? null;
+  const now = new Date();
+  const locked = Boolean(settings?.lock_at && new Date(settings.lock_at) <= now);
   return (
     <main className="form-page space-y-6">
       <div><p className="eyebrow">DO SEU JEITO</p><h1 className="text-3xl font-semibold tracking-tight">Configurações</h1><p className="page-description">Seu perfil e os planos que fazem sentido para suas aulas.</p></div>
@@ -36,6 +43,8 @@ async function PageContent() {
         </div>
         <button className="btn">Salvar</button>
       </form>
+
+      <HolidaySettingsForm key={`${settings?.enabled}-${settings?.policy}-${locked}`} settings={settings} holidays={rules.holidays} today={nowInTZ(now).today} locked={locked} ready={rules.ready} />
 
       <section className="card space-y-3">
         <h2 className="h2">Planos</h2>

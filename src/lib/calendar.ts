@@ -12,7 +12,7 @@ export type CalendarLesson = {
 };
 
 export const LESSON_STATUS: Record<LessonStatus, string> = {
-  agendada: "Agendada", dada: "Realizada", falta: "Falta", desmarcada: "Desmarcada", reposicao: "Reposição",
+  feriado: "Feriado", agendada: "Agendada", dada: "Realizada", falta: "Falta", desmarcada: "Desmarcada", reposicao: "Reposição",
 };
 
 export function shiftMonth(month: string, offset: number): string {
@@ -35,7 +35,7 @@ export function calendarRange(today: string) {
 }
 
 export function lessonTiming(lesson: Pick<CalendarLesson, "date" | "time" | "status">, today: string, time: string, durationMinutes = 60) {
-  if (lesson.status === "desmarcada") return "cancelled";
+  if (lesson.status === "desmarcada" || lesson.status === "feriado") return "cancelled";
   if (lesson.status === "falta") return "absent";
   const start = Date.parse(`${lesson.date}T${lesson.time}:00Z`);
   const now = Date.parse(`${today}T${time}:00Z`);

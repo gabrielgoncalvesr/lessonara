@@ -14,6 +14,10 @@ export function StudentFields({ student, plans }: { student?: Student; plans: Pl
           <input className="input" id="student-email" name="email" type="email" defaultValue={student?.email ?? ""} />
         </div>
         <div>
+          <label className="label" htmlFor="student-phone">Telefone / WhatsApp</label>
+          <input className="input" id="student-phone" name="phone" type="tel" autoComplete="tel" placeholder="(11) 99999-9999" defaultValue={student?.phone ?? ""} />
+        </div>
+        <div>
           <label className="label" htmlFor="student-plan_id">Plano</label>
           <select className="input" id="student-plan_id" name="plan_id" defaultValue={student?.plan_id ?? plans[0]?.id ?? ""}>
             <option value="">Sem plano</option>

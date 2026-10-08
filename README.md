@@ -75,3 +75,11 @@ Envie pela aba Documentos e compartilhe no perfil do aluno. O link público ofer
 O upload vai diretamente do navegador ao Supabase com uma autorização temporária; o arquivo não atravessa uma Server Action da Vercel. O limite é 20 MB por arquivo e a biblioteca reserva até 1 GB por professora, incluindo envios incompletos. A cota do plano Supabase é compartilhada pelo projeto. Remova envios incompletos para liberar a reserva.
 
 Downloads exigem uma sessão da professora ou o link aleatório do aluno com um compartilhamento válido. O bucket é privado e as URLs assinadas duram no máximo 60 segundos. Excluir um documento remove todos os compartilhamentos; encerrar um acesso individual mantém o arquivo e os demais alunos. Um arquivo já baixado não pode ser revogado.
+
+## Feriados e contatos
+
+Rode `supabase/migrations/0004_holidays.sql` e `0005_student_phone.sql` para habilitar a configuração de feriados por professora e o telefone dos alunos. Em Configurações, ative a regra e escolha entre consumir a aula do pacote ou manter o crédito para o próximo encontro. A regra vale para todos os alunos da conta e passa a valer a partir do dia seguinte à ativação. Datas são cadastradas manualmente, sempre a partir de amanhã.
+
+A regra fica travada após o início da primeira aula que ela afetar, no fuso de São Paulo. O banco preserva o travamento mesmo se esse aluno ou horário for removido. Feriados de hoje ou anteriores ficam imutáveis. Antes da primeira aula, mudanças em datas, horários e exceções recalculam o momento de travamento. Desmarcações/faltas explícitas mantêm seu significado; reposições consomem crédito normalmente, inclusive em feriados.
+
+Os cadastros guardam telefone/WhatsApp opcional; a cobrança usa esse número como sugestão e permite alterá-lo antes de abrir a conversa. O site envia `noindex, nofollow` no HTML e no cabeçalho HTTP de todas as rotas.

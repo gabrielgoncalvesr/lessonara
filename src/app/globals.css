@@ -32,6 +32,9 @@
   --font-sans: var(--font-geist-sans);
 }
 
+html { scrollbar-gutter: stable; }
+@supports not (scrollbar-gutter: stable) { html { overflow-y: scroll; } }
+
 body { background: var(--bg); color: var(--fg); }
 button, summary, select { cursor: pointer; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
@@ -66,7 +69,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .teacher-avatar { display: grid; place-items: center; width: 35px; height: 35px; flex-shrink: 0; border-radius: 50%; background: #ede8dc; color: #897b62; }
 .signout { padding: 6px; color: var(--muted); }
 .workspace { margin-left: 246px; }
-.workspace-header { display: flex; justify-content: space-between; align-items: center; height: 78px; padding: 0 44px; border-bottom: 1px solid var(--line); background: #ffffffb3; font-size: 12px; }
+.workspace-header { display: flex; justify-content: space-between; align-items: center; height: 64px; padding: 0 44px; border-bottom: 1px solid var(--line); background: #ffffffb3; font-size: 12px; }
 .header-tag { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
 .workspace-content { max-width: 1500px; margin: auto; padding: 39px 44px 40px; min-height: calc(100vh - 145px); }
 .workspace-footer { display: flex; justify-content: space-between; gap: 16px; padding: 20px 44px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
@@ -142,14 +145,14 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .balance-card { background: #fff; }
 .lesson-row { padding-block: 15px; }
 .lesson-status { border-radius: 6px; background: #f5f7f5; padding: 4px 7px; font-size: 11px; }
-.form-page { max-width: 850px; }
+.form-page { width: 100%; max-width: 850px; margin-inline: auto; }
 .form-page > .card { margin-top: 28px; }
 .skip-link { position: fixed; top: -100px; left: 20px; z-index: 100; padding: 10px 20px; background: #fff; border: 1px solid var(--accent); border-radius: 10px; }
 .skip-link:focus { top: 16px; }
 
 .login-art { position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 46px 56px; background: #edf2e8; }
 .login-art .brand { padding: 0; }
-.login-story { padding: 65px 0; max-width: 480px; }
+.login-story { padding: 65px 0; width: 100%; max-width: 480px; margin-inline: auto; }
 .login-story h1 { font-size: clamp(36px, 3.4vw, 55px); line-height: 1.14; font-weight: 550; letter-spacing: -2px; }
 .login-story h1 em { font-family: Georgia, serif; color: var(--accent); font-weight: 400; }
 .login-story > p { max-width: 360px; font-size: 14px; line-height: 1.85; margin-top: 22px; color: #71816c; }
@@ -196,7 +199,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   .nav-link svg { width: 16px; height: 16px; }
   .nav-dot { display: none; }
   .workspace { margin-left: 0; }
-  .workspace-header { height: 48px; padding-inline: 20px; font-size: 10px; }
+  .workspace-header { height: 44px; padding-inline: 20px; font-size: 10px; }
   .header-tag { font-size: 9px; }
   .workspace-content { padding: 26px 20px; }
   .page-heading { align-items: flex-start; margin-bottom: 24px; }
@@ -514,3 +517,5 @@ input[type="checkbox"] { accent-color: var(--accent); }
  .profile-tab-bar { gap: 22px; }
  .profile-tab-bar > button { font-size: 12px; padding-block: 14px; }
 }
+
+.event-feriado { background: #f0f1f4; color: #74827f; }

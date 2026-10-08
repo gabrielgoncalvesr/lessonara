@@ -1,5 +1,6 @@
 "use server";
 
+import { paymentWhatsAppUrl } from "@/lib/whatsapp";
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -23,7 +24,10 @@ function check<T extends { error: unknown }>(r: T): T {
 }
 
 function studentFields(f: FormData) {
+  const phone = str(f, "phone");
+  if (phone && !paymentWhatsAppUrl(phone)) throw new Error("Confira o telefone e o DDD do aluno.");
   return {
+    phone,
     name: str(f, "name") ?? "Sem nome",
     email: str(f, "email"),
     plan_id: str(f, "plan_id"),
