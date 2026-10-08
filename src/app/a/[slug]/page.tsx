@@ -1,3 +1,4 @@
+import { loadActivities } from "@/lib/activities";
 import { loadStudentShares } from "@/lib/documents";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -27,7 +28,8 @@ async function StudentContent({ params }: Pick<PageProps<"/a/[slug]">, "params">
   if (error) throw error;
   if (!student) notFound();
   const { ledger, packages, today } = (await loadLedgers(supabase, [student.id])).get(student.id)!;
-  const shared = await loadStudentShares(supabase, student.id, student.teacher_id, today, true);
+  const [shared, assigned] = await Promise.all([loadStudentShares(supabase, student.id, student.teacher_id, today, true), loadActivities(supabase, student.teacher_id, student.id)]);
   const materials = shared.shares.map(({ id, title, subject, fileName, byteSize, expiresOn }) => ({ id, title, subject, fileName, byteSize, expiresOn }));
-  return <StudentPortal slug={slug} materials={materials} name={student.name} teacherName={student.teachers?.name ?? ""} ledger={ledger} packages={packages} today={today} time={nowInTZ().time} />;
+  const activities = assigned.activities.map(({ studentId, studentName, documentId, ...activity }) => { void studentId; void studentName; void documentId; return activity; });
+  return <StudentPortal activities={activities} slug={slug} materials={materials} name={student.name} teacherName={student.teachers?.name ?? ""} ledger={ledger} packages={packages} today={today} time={nowInTZ().time} />;
 }

@@ -10,11 +10,11 @@ export type Material = { id: string; title: string; subject: string; fileName: s
 export type StudentShare = Material & { documentId: string };
 type LibraryRow = DocumentRecord & { document_shares: { expires_on: string | null }[] };
 
-export async function loadDocumentLibrary(supabase: SupabaseClient, teacherId: string, today: string) {
+export async function loadDocumentLibrary(supabase: SupabaseClient, teacherId: string, today: string, includeSubmissions = false) {
   const documents: LibraryDocument[] = [];
   for (let offset = 0; ; offset += 1000) {
     const { data, error } = await supabase.from("documents").select("*, document_shares(expires_on)").eq("teacher_id", teacherId).order("created_at", { ascending: false }).order("id").range(offset, offset + 999).returns<LibraryRow[]>();
-    if (documentsSetupMissing(error)) return { ready: false, documents: [] as LibraryDocument[] };
+    if (documentsSetupMissing(error)) return { ready: false, documents: [] as LibraryDocument[], submissionBytes: 0 };
     if (error) throw error;
     const rows = data ?? [];
     documents.push(...rows.map(({ document_shares, storage_path, teacher_id, ...document }) => {
@@ -23,7 +23,13 @@ export async function loadDocumentLibrary(supabase: SupabaseClient, teacherId: s
     }));
     if (rows.length < 1000) break;
   }
-  return { ready: true, documents: [...new Map(documents.map((document) => [document.id, document])).values()] };
+  let submissionBytes = 0;
+  if (includeSubmissions) {
+    const usage = await supabase.rpc("submission_storage_usage");
+    if (usage.error && !documentsSetupMissing(usage.error)) throw usage.error;
+    submissionBytes = Number(usage.data ?? 0);
+  }
+  return { ready: true, submissionBytes, documents: [...new Map(documents.map((document) => [document.id, document])).values()] };
 }
 
 export async function loadStudentShares(supabase: SupabaseClient, studentId: string, teacherId: string, today: string, activeOnly = false) {

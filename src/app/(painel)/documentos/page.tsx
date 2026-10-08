@@ -12,6 +12,6 @@ export default function DocumentsPage() {
 async function LibraryData() {
   const { supabase, userId } = await requireUser();
   const { today } = nowInTZ();
-  const library = await loadDocumentLibrary(supabase, userId, today);
-  return <DocumentLibrary documents={library.documents} ready={library.ready} />;
+  const library = await loadDocumentLibrary(supabase, userId, today, true);
+  return <DocumentLibrary documents={library.documents} submissionBytes={library.submissionBytes} ready={library.ready} />;
 }

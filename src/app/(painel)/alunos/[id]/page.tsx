@@ -1,3 +1,4 @@
+import { StudentActivitySection } from "@/components/student-activity-section";
 import { StudentProfileTabs } from "@/components/student-profile-tabs";
 import { StudentDocuments } from "@/components/student-documents";
 import { ScheduleForm } from "@/components/schedule-form";
@@ -184,6 +185,11 @@ async function StudentContent({ params }: Pick<PageProps<"/alunos/[id]">, "param
               </form>
             </div>
           </section>
+        }
+        atividades={
+          <Suspense fallback={<section className="card text-sm text-muted">Carregando atividades…</section>}>
+            <StudentActivitySection supabase={supabase} teacherId={userId} studentId={id} studentName={student.name} today={today} />
+          </Suspense>
         }
         materiais={
           <Suspense fallback={<section className="card text-sm text-muted">Carregando materiais do aluno…</section>}>

@@ -8,6 +8,7 @@ const tabs = [
   { id: "pacotes", hash: "pagamentos", label: "Pacotes pagos", icon: "book" },
   { id: "horarios", hash: "horarios", label: "Horários", icon: "clock" },
   { id: "dados", hash: "dados", label: "Dados do aluno", icon: "users" },
+  { id: "atividades", hash: "atividades", label: "Atividades", icon: "check" },
   { id: "materiais", hash: "materiais", label: "Materiais", icon: "book" },
 ] as const;
 type TabId = (typeof tabs)[number]["id"];

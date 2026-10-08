@@ -83,3 +83,11 @@ Rode `supabase/migrations/0004_holidays.sql` e `0005_student_phone.sql` para hab
 A regra fica travada após o início da primeira aula que ela afetar, no fuso de São Paulo. O banco preserva o travamento mesmo se esse aluno ou horário for removido. Feriados de hoje ou anteriores ficam imutáveis. Antes da primeira aula, mudanças em datas, horários e exceções recalculam o momento de travamento. Desmarcações/faltas explícitas mantêm seu significado; reposições consomem crédito normalmente, inclusive em feriados.
 
 Os cadastros guardam telefone/WhatsApp opcional; a cobrança usa esse número como sugestão e permite alterá-lo antes de abrir a conversa. O site envia `noindex, nofollow` no HTML e no cabeçalho HTTP de todas as rotas.
+
+## Atividades e entregas
+
+Rode `supabase/migrations/0006_activities.sql` para criar atividades, entregas e o bucket privado de devoluções. A professora envia pela aba Atividades ou pelo perfil do aluno, usando um arquivo da biblioteca ou somente instruções. O aluno recebe uma aba Atividades no seu link e pode devolver um arquivo de até 20 MB, com observações opcionais.
+
+Cada atividade aceita uma entrega concluída. Envios interrompidos podem ser descartados para tentar novamente. As datas de envio, entrega e conferência ficam registradas; o prazo inclui o dia escolhido no fuso de São Paulo. Entregas posteriores continuam permitidas e são sinalizadas. A professora registra comentários e marca como conferida; o aluno acompanha o retorno no mesmo local.
+
+Arquivar interrompe novas entregas e preserva a atividade. Remover o arquivo de uma entrega concluída libera espaço, mantendo datas e comentários. A biblioteca e as entregas compartilham a reserva de 1 GB por professora. A cota gratuita do provedor é compartilhada por todo o projeto. Os uploads passam diretamente pelo Storage com autorização temporária; nenhuma credencial administrativa vai ao navegador.
