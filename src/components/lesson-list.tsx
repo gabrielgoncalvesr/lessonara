@@ -16,7 +16,7 @@ const STATUS: Record<LessonStatus, {
 };
 export function LessonList({ lessons, actions, }: {
     lessons: Lesson[];
-    actions?: (lesson: Lesson) => ReactNode;
+    actions?: Record<string, ReactNode>;
 }) {
     const { t, locale } = useI18n();
     if (lessons.length === 0)
@@ -33,7 +33,7 @@ export function LessonList({ lessons, actions, }: {
             {uncovered && <span className="rounded bg-bad/10 px-1.5 py-0.5 text-xs text-bad">{t("sem pacote")}</span>}
             {l.holidayName && <span className="text-xs text-muted">{t("\u00B7 ")}{l.holidayName}</span>}
             {l.event?.note && <span className="text-xs text-muted">{t("\u00B7 ")}{l.event.note}</span>}
-            {actions && <span className="ml-auto flex gap-1">{actions(l)}</span>}
+            {actions && <span className="ml-auto flex gap-1">{actions[`${l.date}-${l.time}-${l.status}`]}</span>}
           </li>);
         })}
     </ul>);

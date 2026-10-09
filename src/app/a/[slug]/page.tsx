@@ -1,15 +1,15 @@
 import {getTranslator} from "@/lib/i18n/server";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { authorizedStudent } from "@/lib/student-access";
+import {createAdminClient} from "@/lib/supabase/server";
 async function Legacy({ params }: {
     params: Promise<{
         slug: string;
     }>;
 }) {
     const { slug } = await params;
-    const student = await authorizedStudent(slug, "slug");
-    return redirect(student ? `/student/portal/${student.id}` : "/student/login");
+    const {data:student}=await createAdminClient().from("students").select("teacher_id,slug").eq("slug",slug).eq("active",true).maybeSingle();
+    return redirect(student ? `/p/${student.teacher_id}/s/${encodeURIComponent(student.slug)}` : "/student/login");
 }
 export default async function LegacyStudentLink(props: {
     params: Promise<{

@@ -95,17 +95,19 @@ Arquivar interrompe novas entregas e preserva a atividade. Remover o arquivo de 
 
 ## Acesso autenticado do aluno e emails centralizados
 
-A implementação nova substitui o link público como credencial. `/student` é a entrada estável: o aluno solicita um código numérico de seis a oito dígitos por email e entra sem depender da professora. Os links antigos `/a/[slug]` só redirecionam depois de verificar a sessão e o vínculo. O portal canônico fica em `/student/portal/[id]`; esse identificador não concede acesso por si só.
+Cada aluno recebe um link próprio no formato `/p/[teacherId]/s/[slug]`. O identificador do professor e o slug aleatório identificam somente um cadastro; não dão acesso sem o código enviado ao email daquele aluno. As boas-vindas são enfileiradas automaticamente na mesma transação do cadastro. A tela Emails acompanha envios e falhas, sem lista de perfis ou convites públicos.
 
-O Supabase Auth gera e verifica os códigos. O servidor cria novos usuários com `app_metadata.role=student`; a migration impede a criação automática de perfis de professora para esses usuários e impede que eles insiram um perfil de professora pela API. A sessão da professora continua independente. Tokens de Auth do aluno não são entregues ao navegador: após a confirmação, o app registra uma sessão opaca e seus vínculos no banco, com cookie HttpOnly, Secure em produção e SameSite=Lax.
+O OTP tem seis dígitos, validade de dez minutos e cinco tentativas. O aluno solicita o código no seu próprio link. O reenvio tem espera de cinco minutos, imposta no banco; recarregar a página restaura o email e o contador do desafio. Email e código são conferidos para o aluno identificado no link; não há seleção de perfis baseada em email compartilhado.
 
-A sessão vence **30 dias após o login**, sem renovação silenciosa. Há saída explícita e revogação ao mudar email, desativar cadastro ou regenerar seu identificador. Cada leitura, download e entrega verifica a sessão, o email atual e a versão do vínculo. Quando um email é compartilhado entre cadastros, o aluno escolhe um perfil após verificar o código. Cada sessão fica vinculada somente ao perfil escolhido; o identificador de outro perfil não permite acessá-lo. Para trocar de perfil, saia e solicite um novo código.
+A sessão fica em cookie HttpOnly, Secure em produção e SameSite=Lax, com prazo absoluto de trinta dias. Cada leitura, download e entrega verifica aluno, professor, email e versão do vínculo. Trocar email, desativar cadastro ou regenerar o link revoga o vínculo. O código não é a sessão: vence em dez minutos; após validá-lo, o aluno continua autenticado por até trinta dias.
+
+Os links antigos `/a/[slug]` encaminham ao link específico. `/student/portal/[id]` só encaminha quando há uma sessão autorizada. Quem acessa a entrada genérica sem sessão é orientado a abrir o convite do próprio professor(a), sem enumeração de alunos.
 
 ### Preparar antes de publicar
 
 1. Verifique um domínio com acesso ao DNS no Resend. `onboarding@resend.dev` só permite teste para o email da própria conta; não use esse modo para autenticação de alunos reais. Uma caixa postal paga não é necessária para o envio transacional.
 2. Configure `EMAIL_FROM` nesse domínio, `RESEND_API_KEY` e `APP_URL` canônica. Configure `EMAIL_ENCRYPTION_KEY` com 32 bytes em hexadecimal (`openssl rand -hex 32`), apenas no servidor/Vercel. Ela protege os códigos e corpos em fila; não use prefixo `NEXT_PUBLIC_` e não registre o valor em logs. Uma chave foi criada somente em `.env.local` durante o desenvolvimento.
-3. Rode `0007_student_access_email.sql` depois das migrations existentes e antes de publicar este código. O código e a migration devem ser liberados juntos. Não abra cadastro público no Supabase. Códigos são verificados como tipo `email`; o formulário aceita códigos de seis a oito dígitos. O app impõe prazo de dez minutos mesmo se a validade do provedor for maior.
+3. Rode `0007_student_access_email.sql` depois das migrations existentes e antes de publicar este código. O código e a migration devem ser liberados juntos. Não abra cadastro público no Supabase. Códigos são verificados como tipo `email`; configure OTP com seis dígitos e expiração de 600 segundos. O app impõe prazo de dez minutos mesmo se a validade do provedor for maior.
 4. Atualize os emails dos alunos existentes pela professora. Cadastros antigos sem email são preservados, mas não podem acessar o novo portal. Novos cadastros e alterações exigem email válido; não preencha endereços fictícios. A migração não dispara convites para cadastros antigos: use a tela Emails para enviá-los quando estiverem revisados.
 5. Faça um teste controlado ponta a ponta: boas-vindas, código recebido, login, materiais, envio de atividade, logout, código repetido/vencido, troca de email e acesso cruzado. A preparação local usa testes e PostgreSQL isolado; o envio real e a configuração do Supabase publicado continuam pendentes até essa etapa.
 
@@ -119,7 +121,7 @@ Retries preservam o mesmo corpo e remetente. Como a idempotência do Resend vale
 
 ### Limites e privacidade
 
-Desafios aceitam cinco tentativas e duram dez minutos. Reenvio tem intervalo mínimo de um minuto, limite de cinco pedidos por email/hora, vinte por IP/hora e cem globais/hora. Os contadores persistem no banco e usam HMAC de email/IP, sem armazenar o IP original. A resposta pública não informa se o email existe. Na Vercel, somente o header de IP fornecido pelo proxy é utilizado; localmente há um bucket compartilhado. Esse controle não substitui a proteção da borda contra ataques distribuídos.
+Desafios aceitam cinco tentativas e duram dez minutos. Reenvio tem intervalo mínimo de cinco minutos, limite de cinco pedidos por email/hora, vinte por IP/hora e cem globais/hora. Os contadores persistem no banco e usam HMAC de email/IP, sem armazenar o IP original. A resposta pública não informa se o email existe. Na Vercel, somente o header de IP fornecido pelo proxy é utilizado; localmente há um bucket compartilhado. Esse controle não substitui a proteção da borda contra ataques distribuídos.
 
 Arquivos continuam em buckets privados e usam URLs assinadas curtas. Links já assinados ou arquivos já baixados não são revogados retroativamente. Analytics e Speed Insights não são montados nas rotas do aluno para não encaminhar identificadores do portal a esses serviços.
 
@@ -136,6 +138,12 @@ As migrations 0008 e 0007 foram aplicadas no banco publicado em 2026-10-08 e 202
 
 ## Idioma, aparência e ações
 
-Configurações oferece português brasileiro (padrão), inglês, espanhol e francês; as telas de login também oferecem essa escolha. Preferências são guardadas em cookies do navegador, sem idioma na URL. Os temas claro, escuro e do sistema usam a mesma preferência local. Datas são apresentadas no idioma escolhido, preservando o fuso de São Paulo e valores em reais.
+Configurações oferece português brasileiro (padrão), inglês, espanhol e francês; o header do portal autenticado do aluno também oferece essa escolha. Preferências são guardadas em cookies do navegador, sem idioma na URL. O tema padrão é sempre claro até uma escolha explícita. Os temas claro, escuro e do sistema usam a preferência local. Datas são apresentadas no idioma escolhido, preservando o fuso de São Paulo e valores em reais.
 
 Rotas canônicas usam inglês; as URLs antigas em português redirecionam. O seletor de países mostra uma lista curta de países frequentes e pesquisa nomes traduzidos, com rolagem limitada. Ações de gravação desabilitam seus botões e mostram um indicador enquanto aguardam o servidor.
+
+## Ajustes do portal e escopo
+
+A migration `0009_scoped_student_access.sql` vincula cada desafio a um aluno e invalida desafios anteriores sem contexto. Sessões existentes mantêm seu vínculo único. A renovação aparece antes do próximo encontro; o resumo de dia vazio mantém o separador e a mesma altura mínima de uma aula. Materiais vencidos aparecem com download indisponível, e o backend continua recusando downloads após o prazo. Atividades aceitam entregas atrasadas; entregas concluídas ficam recolhidas, com aviso de conferência. Materiais e atividades aceitam prazo nulo.
+
+Veja `FUTURE_FEATURES.md` para múltiplos professores por pessoa e acesso de responsáveis.

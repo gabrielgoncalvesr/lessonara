@@ -9,7 +9,7 @@ import { sortPackages, type Lesson, type Package } from "@/lib/ledger";
 function Groups({ lessons, packages, actions, grouping }: {
     lessons: Lesson[];
     packages: Package[];
-    actions?: (lesson: Lesson) => ReactNode;
+    actions?: Record<string, ReactNode>;
     grouping: "month" | "package";
 }) {
     const { t, locale } = useI18n();
@@ -29,7 +29,7 @@ function Groups({ lessons, packages, actions, grouping }: {
 export function LessonHistory({ lessons, packages, actions }: {
     lessons: Lesson[];
     packages: Package[];
-    actions?: (lesson: Lesson) => ReactNode;
+    actions?: Record<string, ReactNode>;
 }) {
     return <HistoryTabs monthContent={<Groups lessons={lessons} packages={packages} actions={actions} grouping="month"/>} packageContent={<Groups lessons={lessons} packages={packages} actions={actions} grouping="package"/>}/>;
 }

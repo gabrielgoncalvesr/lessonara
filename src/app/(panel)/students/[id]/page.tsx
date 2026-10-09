@@ -42,7 +42,7 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
     const lessons = visibleLessons(ledger, today);
     const upcoming = lessons.filter((l) => !l.past);
     const history = lessons.filter((l) => l.past).reverse();
-    const link = `${(await getOrigin())}/student`;
+    const link = `${await getOrigin()}/p/${student.teacher_id}/s/${encodeURIComponent(student.slug)}`;
     const lessonActions = (l: (typeof lessons)[number]) => l.status === "feriado" ? null : l.event ? (<ActionForm action={deleteEvent.bind(null, id, l.event.id)}>
         <SubmitButton className="btn-xs">{t("desfazer")}</SubmitButton>
       </ActionForm>) : (<>
@@ -59,14 +59,14 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
         <h1 className="w-full text-xl font-semibold">{student.name}</h1>
         <code className="truncate rounded bg-surface px-2 py-1 text-xs text-muted">{link}</code>
         <CopyButton text={link}/>
-        <Link href={`/student`} target="_blank" className="btn-xs">{t("abrir")}</Link>
+        <Link href={link} target="_blank" className="btn-xs">{t("abrir")}</Link>
       </div>
 
       <Balance ledger={ledger}/>
       <StudentProfileTabs aulas={<div className="detail-grid profile-lessons-grid">
             <section className="card">
               <h2 className="h2">{t("Pr\u00F3ximas aulas")}</h2>
-              <LessonList lessons={upcoming} actions={lessonActions}/>
+              <LessonList lessons={upcoming} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/>
               <details className="mt-3">
                 <summary className="cursor-pointer text-sm text-accent">{t("+ Lan\u00E7ar reposi\u00E7\u00E3o")}</summary>
                 <ActionForm action={addReposicao.bind(null, id)} className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -80,7 +80,7 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
 
             <section className="card">
               <h2 className="h2">{t("Hist\u00F3rico")}</h2>
-              <LessonHistory lessons={history} packages={packages} actions={lessonActions}/>
+              <LessonHistory lessons={history} packages={packages} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/>
             </section>
           </div>} pacotes={<section id="pagamentos" className="card space-y-3 scroll-mt-6">
             <h2 className="h2">{t("Pacotes pagos")}</h2>

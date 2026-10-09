@@ -1,7 +1,11 @@
 import type { SVGProps } from "react";
 
-export type IconName = "chart" | "grid" | "users" | "calendar" | "settings" | "arrow" | "plus" | "search" | "book" | "logout" | "clock" | "check";
+export type IconName = "chart" | "grid" | "users" | "calendar" | "settings" | "arrow" | "plus" | "search" | "book" | "logout" | "clock" | "check" | "download" | "language" | "sun" | "moon";
 const paths: Record<IconName, string> = {
+  download:"M12 3v12 M7 10l5 5 5-5 M4 16v5h16v-5",
+  language:"M3 5h12 M9 3v2 M5 5c0 5 4 9 9 11 M13 5c0 5-4 9-9 11 M14 21l4-10 4 10 M16 17h4",
+  sun:"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l1 1 M18 18l1 1 M5 19l1-1 M18 6l1-1",
+  moon:"M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11",
   chart: "M3 3v18h18 M7 14l4-4 4 3 5-7",
   grid: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
   users: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",

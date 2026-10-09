@@ -778,3 +778,25 @@ button:disabled{cursor:wait;}
 .browser-preferences-compact .h2{font-size:13px;}
 .browser-preferences-compact p{font-size:11px;}
 @media(max-width:480px){.country-select{flex-basis:100px;}.country-trigger{padding-inline:8px;font-size:12px;}}
+
+/* Student portal controls and consistent document actions. */
+.portal-preferences{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.portal-preference-control{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:7px 9px;color:var(--muted);background:var(--card);font-size:12px}
+.portal-preference-control select{background:transparent;color:inherit;max-width:130px;cursor:pointer;outline-offset:4px}
+.portal-preference-control option{background:var(--card);color:var(--fg)}
+.portal-renew{border-left:5px solid var(--bad);padding:22px 24px}
+.portal-renew .font-semibold{font-size:17px}
+.day-summary-body{border-top:1px solid var(--line);min-height:68px}
+.day-summary .day-lesson:first-child{border-top:0}
+.day-summary-empty{display:flex;align-items:center;min-height:68px;padding:20px 0;margin:0}
+.file-download{display:inline-flex;gap:9px;align-items:center;padding:11px 15px;font-size:13px;line-height:1.5;white-space:normal;text-align:left}
+.file-download strong{font-weight:600;overflow-wrap:anywhere}
+.file-download-disabled{opacity:.6;cursor:default}
+.activity-completed summary{cursor:pointer;list-style:none;display:flex;gap:14px;align-items:center}
+.activity-completed summary::-webkit-details-marker{display:none}
+.activity-completed summary h3{flex:1}
+.activity-collapse-icon{transform:rotate(90deg);transition:transform .15s}
+.activity-completed[open] .activity-collapse-icon{transform:rotate(-90deg)}
+.activity-review-hint{margin-top:10px}
+.activity-completed[open] .activity-review-hint{display:none}
+@media(max-width:640px){.portal-header{flex-wrap:wrap;gap:15px}.student-material-list li{flex-wrap:wrap}.student-material-list .file-download{width:100%}.portal-preferences{margin-left:auto}}
