@@ -4,9 +4,9 @@ import { DEFAULT_WHATSAPP_MESSAGE, paymentWhatsAppUrl } from "./whatsapp";
 
 const friday = { weekday: 5, time: "20:00", starts_on: "2026-06-19", ends_on: null };
 
-it("limita pacotes de 4 a um horário e de 8 a dois", () => {
-  expect(weeklyScheduleLimit(4)).toBe(1);
-  expect(weeklyScheduleLimit(8)).toBe(2);
+it("usa frequência explícita e não tamanho de pacote", () => {
+  expect(weeklyScheduleLimit(4)).toBe(4);
+  expect(weeklyScheduleLimit(undefined,2)).toBe(2);
   expect(canAddWeeklySchedule([friday], 1, "2026-10-07", 1)).toBe(false);
   expect(canAddWeeklySchedule([friday], 2, "2026-10-07", 1)).toBe(true);
   expect(canAddWeeklySchedule([friday, { ...friday, weekday: 2 }], 2, "2026-10-07", 1)).toBe(false);
@@ -29,3 +29,5 @@ it("monta a mensagem exata e abre conversa pelo telefone com DDD", () => {
   expect(paymentWhatsAppUrl("123")).toBeNull();
   expect(new URL(paymentWhatsAppUrl("+1 202 555 0100")!).pathname).toBe("/12025550100");
 });
+
+it("frequência do aluno prevalece sobre plano, sem inferência de pagamento",()=>{expect(weeklyScheduleLimit(3,2)).toBe(3);expect(weeklyScheduleLimit(null,2)).toBe(2);expect(weeklyScheduleLimit(8,2)).toBe(0);expect(weeklyScheduleLimit()).toBe(0);});

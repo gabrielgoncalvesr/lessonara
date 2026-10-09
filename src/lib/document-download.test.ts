@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ admin: vi.fn(), user: vi.fn(), signed: vi.fn() }));
+const mocks = vi.hoisted(() => ({ admin: vi.fn(), user: vi.fn(), signed: vi.fn(), authorized:vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createAdminClient: mocks.admin, requireUser: mocks.user }));
 
-import { GET as studentDownload } from "@/app/a/[slug]/materiais/[shareId]/route";
-import { GET as teacherDownload } from "@/app/(painel)/documentos/[id]/arquivo/route";
+vi.mock("@/lib/student-access",()=>({authorizedStudent:mocks.authorized}));
+import { GET as studentDownload } from "@/app/a/[slug]/materials/[shareId]/route";
+import { GET as teacherDownload } from "@/app/(panel)/documents/[id]/file/route";
 
 type Row = Record<string, unknown>;
 const student = { id: "student-a", teacher_id: "teacher-a", slug: "student-link" };
@@ -29,15 +30,16 @@ function client(records: Record<string, Row[]>) {
 }
 
 beforeEach(() => {
-  vi.resetAllMocks(); vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-07T15:00:00Z"));
+  vi.resetAllMocks(); mocks.authorized.mockResolvedValue(student); vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-07T15:00:00Z"));
   mocks.signed.mockResolvedValue({ data: { signedUrl: "https://files.example.com/test.pdf" }, error: null });
 });
 afterEach(() => vi.useRealTimers());
 
-const request = new Request("https://lessonara.example/a/student-link/materiais/share-a");
+const request = new Request("https://lessonara.example/a/student-link/materials/share-a");
 const params = { params: Promise.resolve({ slug: "student-link", shareId: "share-a" }) };
 
 it("não assina download para um link de aluno desconhecido", async () => {
+  mocks.authorized.mockResolvedValue(null);
   mocks.admin.mockReturnValue(client({ students: [], document_shares: [shared] }));
   expect((await studentDownload(request, params)).status).toBe(404);
   expect(mocks.signed).not.toHaveBeenCalled();
@@ -74,3 +76,5 @@ it("a professora não baixa um documento pertencente a outra conta", async () =>
   expect((await teacherDownload(request, { params: Promise.resolve({ id: "doc" }) })).status).toBe(404);
   expect(mocks.signed).not.toHaveBeenCalled();
 });
+
+it("conhecer a URL não permite baixar materiais sem sessão",async()=>{mocks.authorized.mockResolvedValue(null);mocks.admin.mockReturnValue(client({students:[student],document_shares:[shared]}));expect((await studentDownload(request,params)).status).toBe(404);expect(mocks.signed).not.toHaveBeenCalled();});

@@ -26,7 +26,7 @@ it("envia com a chave do ambiente e mantém o endereço de resposta da professor
 
 it("propaga a rejeição da API para o cron não registrar um lembrete como enviado", async () => {
   mocks.send.mockResolvedValue({ data: null, error: { name: "validation_error", message: "Remetente não verificado" } });
-  await expect(sendEmail(email)).rejects.toThrow("Remetente não verificado");
+  await expect(sendEmail(email)).rejects.toThrow("validation_error");
 });
 
 it("exige a chave antes de tentar enviar", async () => {
@@ -41,3 +41,5 @@ it("usa o remetente de onboarding quando nenhum remetente foi configurado", asyn
   await sendEmail(email);
   expect(mocks.send).toHaveBeenCalledWith(expect.objectContaining({ from: "Lessonara <onboarding@resend.dev>" }));
 });
+
+it("retries usam a chave de idempotência do mesmo trabalho",async()=>{mocks.send.mockResolvedValue({data:{id:"email-id"},error:null});await sendEmail(email,"job-1");expect(mocks.send).toHaveBeenCalledWith(expect.objectContaining({to:email.to}),{idempotencyKey:"job-1"});});

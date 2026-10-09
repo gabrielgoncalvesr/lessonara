@@ -1,8 +1,9 @@
 import { addDays, weekday } from "./dates";
 import type { Schedule } from "./ledger";
 
-export function weeklyScheduleLimit(lessons: number | undefined) {
-  return lessons && lessons > 0 ? Math.max(1, Math.floor(lessons / 4)) : 0;
+export function weeklyScheduleLimit(studentFrequency?: number | null, planFrequency?: number | null) {
+  const count = studentFrequency ?? planFrequency;
+  return count && Number.isInteger(count) && count >= 1 && count <= 7 ? count : 0;
 }
 
 export function firstScheduleDate(startsOn: string, day: number) {

@@ -1,17 +1,90 @@
 "use client";
-import { useState,useTransition } from "react";
+import {BusyContent} from "@/components/busy-content";
+import { useI18n } from "@/components/browser-preferences-provider";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { activityStatus,type Activity,type ActivityDocument } from "@/lib/activities";
+import { activityStatus, type Activity, type ActivityDocument } from "@/lib/activities";
 import { activityDateTime } from "@/lib/activity-dates";
 import { formatDate } from "@/lib/dates";
 import { formatFileSize } from "@/lib/document-rules";
-import { archiveActivity,assignActivity,removeSubmissionFile,reviewActivity } from "@/app/(painel)/atividades/actions";
-function ActivityItem({activity,today}:{activity:Activity;today:string}){
- const [pending,startTransition]=useTransition();const [message,setMessage]=useState("");const [remove,setRemove]=useState(false);
- return <section className="card activity-card"><div className="section-heading"><div><h3>{activity.title}</h3><Link className="mt-1 inline-block text-xs text-accent hover:underline" href={`/alunos/${activity.studentId}#atividades`}>{activity.studentName}</Link></div><span className="balance-pill">{activityStatus(activity,today)}</span></div><p className="activity-dates">Enviada em {activityDateTime(activity.assigned_at)} · {activity.due_on?`Entregar até ${formatDate(activity.due_on)}`:"Sem prazo de entrega"}</p>{activity.instructions&&<p className="activity-instructions">{activity.instructions}</p>}{activity.documentId&&<a className="btn-xs mt-4 inline-block" href={`/documentos/${activity.documentId}/arquivo`} target="_blank" rel="noreferrer">Arquivo enviado · {activity.documentName}</a>}{activity.submission?.submitted_at&&<div className="activity-delivery"><h4>Entrega do aluno</h4><p className="text-xs text-muted">{activityDateTime(activity.submission.submitted_at)}{activity.submission.submitted_late?" · após o prazo":""}</p><p className="mt-2 text-sm">{activity.submission.file_name} · {formatFileSize(activity.submission.byte_size)}</p>{activity.submission.note&&<p className="activity-instructions">{activity.submission.note}</p>}{activity.submission.status==="ready"&&<a className="btn-ghost mt-3" href={`/atividades/${activity.id}/entrega`} target="_blank" rel="noreferrer">Baixar entrega</a>}{activity.submission.status==="deleted"&&<p className="mt-2 text-xs text-muted">Arquivo removido; histórico da entrega preservado.</p>}<form onSubmit={event=>{event.preventDefault();const data=new FormData(event.currentTarget);startTransition(async()=>{try{const result=await reviewActivity(activity.id,String(data.get("feedback")??""));setMessage(result.ok?"Conferência registrada.":result.message);}catch{setMessage("Não foi possível registrar a conferência.");}});}} className="mt-4 space-y-3"><label className="label" htmlFor={`feedback-${activity.id}`}>Comentário para o aluno (opcional)</label><textarea className="input" id={`feedback-${activity.id}`} name="feedback" rows={3} maxLength={4000} defaultValue={activity.feedback} disabled={pending}/><button className="btn-ghost" disabled={pending}>{activity.reviewed_at?"Atualizar conferência":"Marcar como conferida"}</button>{activity.reviewed_at&&<p className="text-xs text-muted">Conferida em {activityDateTime(activity.reviewed_at)}</p>}</form></div>}{activity.submission&&!activity.submission.submitted_at&&<p className="mt-4 text-xs text-muted">Envio do aluno incompleto. Você pode descartar o arquivo para liberar uma nova tentativa.</p>}<div className="activity-controls"><button className="btn-xs" disabled={pending} onClick={()=>startTransition(async()=>{try{const result=await archiveActivity(activity.id,!activity.archived_at);setMessage(result.ok?"Atividade atualizada.":result.message);}catch{setMessage("Não foi possível atualizar a atividade.");}})}>{activity.archived_at?"Reabrir atividade":"Arquivar atividade"}</button>{activity.submission&&activity.submission.status!=="deleted"&&<><button className="btn-xs text-bad" disabled={pending} onClick={()=>{if(!remove){setRemove(true);return;}startTransition(async()=>{try{const result=await removeSubmissionFile(activity.submission!.id);setMessage(result.ok?"Arquivo removido.":result.message);setRemove(false);}catch{setMessage("Não foi possível remover o arquivo.");}});}}>{remove?"Confirmar remoção do arquivo":activity.submission.submitted_at?"Remover arquivo da entrega":"Descartar envio incompleto"}</button>{remove&&<button className="btn-xs" onClick={()=>setRemove(false)}>Cancelar remoção</button>}</>}</div>{remove&&<p role="alert" className="mt-2 text-xs text-bad">O arquivo será removido permanentemente. Datas, comentários e o histórico de entregas concluídas serão preservados.</p>}{message&&<p role="status" className="mt-3 text-xs text-accent">{message}</p>}</section>;
+import { archiveActivity, assignActivity, removeSubmissionFile, reviewActivity } from "@/app/(panel)/activities/actions";
+function ActivityItem({ activity, today }: {
+    activity: Activity;
+    today: string;
+}) {
+    const { t, locale } = useI18n();
+    const [pending, startTransition] = useTransition();
+    const [message, setMessage] = useState("");
+    const [remove, setRemove] = useState(false);
+    return <section className="card activity-card"><div className="section-heading"><div><h3>{activity.title}</h3><Link className="mt-1 inline-block text-xs text-accent hover:underline" href={`/students/${activity.studentId}#atividades`}>{activity.studentName}</Link></div><span className="balance-pill">{t(activityStatus(activity, today))}</span></div><p className="activity-dates">{t("Enviada em ")}{activityDateTime(activity.assigned_at, locale)}{t(" \u00B7 ")}{activity.due_on ? t("Entregar at\u00E9 {value0}", { value0: formatDate(activity.due_on, locale) }) : t("Sem prazo de entrega")}</p>{activity.instructions && <p className="activity-instructions">{activity.instructions}</p>}{activity.documentId && <a className="btn-xs mt-4 inline-block" href={`/documents/${activity.documentId}/file`} target="_blank" rel="noreferrer">{t("Arquivo enviado \u00B7 ")}{activity.documentName}</a>}{activity.submission?.submitted_at && <div className="activity-delivery"><h4>{t("Entrega do aluno")}</h4><p className="text-xs text-muted">{activityDateTime(activity.submission.submitted_at, locale)}{activity.submission.submitted_late ? t(" \u00B7 ap\u00F3s o prazo") : t("")}</p><p className="mt-2 text-sm">{activity.submission.file_name}{t(" \u00B7 ")}{formatFileSize(activity.submission.byte_size)}</p>{activity.submission.note && <p className="activity-instructions">{activity.submission.note}</p>}{activity.submission.status === "ready" && <a className="btn-ghost mt-3" href={`/activities/${activity.id}/submission`} target="_blank" rel="noreferrer">{t("Baixar entrega")}</a>}{activity.submission.status === "deleted" && <p className="mt-2 text-xs text-muted">{t("Arquivo removido; hist\u00F3rico da entrega preservado.")}</p>}<form onSubmit={event => {
+                event.preventDefault();
+                const data = new FormData(event.currentTarget);
+                startTransition(async () => {
+                    try {
+                        const result = await reviewActivity(activity.id, String(data.get("feedback") ?? ""));
+                        setMessage(result.ok ? "Conferência registrada." : result.message);
+                    }
+                    catch {
+                        setMessage("Não foi possível registrar a conferência.");
+                    }
+                });
+            }} className="mt-4 space-y-3"><label className="label" htmlFor={`feedback-${activity.id}`}>{t("Coment\u00E1rio para o aluno (opcional)")}</label><textarea className="input" id={`feedback-${activity.id}`} name="feedback" rows={3} maxLength={4000} defaultValue={activity.feedback} disabled={pending}/><button className="btn-ghost" disabled={pending}><BusyContent pending={pending}>{activity.reviewed_at ? t("Atualizar confer\u00EAncia") : t("Marcar como conferida")}</BusyContent></button>{activity.reviewed_at && <p className="text-xs text-muted">{t("Conferida em ")}{activityDateTime(activity.reviewed_at, locale)}</p>}</form></div>}{activity.submission && !activity.submission.submitted_at && <p className="mt-4 text-xs text-muted">{t("Envio do aluno incompleto. Voc\u00EA pode descartar o arquivo para liberar uma nova tentativa.")}</p>}<div className="activity-controls"><button className="btn-xs" disabled={pending} onClick={() => startTransition(async () => {
+            try {
+                const result = await archiveActivity(activity.id, !activity.archived_at);
+                setMessage(result.ok ? "Atividade atualizada." : result.message);
+            }
+            catch {
+                setMessage("Não foi possível atualizar a atividade.");
+            }
+        })}><BusyContent pending={pending}>{activity.archived_at ? t("Reabrir atividade") : t("Arquivar atividade")}</BusyContent></button>{activity.submission && activity.submission.status !== "deleted" && <><button className="btn-xs text-bad" disabled={pending} onClick={() => {
+                if (!remove) {
+                    setRemove(true);
+                    return;
+                }
+                startTransition(async () => {
+                    try {
+                        const result = await removeSubmissionFile(activity.submission!.id);
+                        setMessage(result.ok ? "Arquivo removido." : result.message);
+                        setRemove(false);
+                    }
+                    catch {
+                        setMessage("Não foi possível remover o arquivo.");
+                    }
+                });
+            }}><BusyContent pending={pending}>{remove ? t("Confirmar remo\u00E7\u00E3o do arquivo") : activity.submission.submitted_at ? t("Remover arquivo da entrega") : t("Descartar envio incompleto")}</BusyContent></button>{remove && <button className="btn-xs" onClick={() => setRemove(false)}>{t("Cancelar remo\u00E7\u00E3o")}</button>}</>}</div>{remove && <p role="alert" className="mt-2 text-xs text-bad">{t("O arquivo ser\u00E1 removido permanentemente. Datas, coment\u00E1rios e o hist\u00F3rico de entregas conclu\u00EDdas ser\u00E3o preservados.")}</p>}{message && <p role="status" className="mt-3 text-xs text-accent">{t(message)}</p>}</section>;
 }
-export function TeacherActivities({activities,documents,students,studentId,today,ready}:{activities:Activity[];documents:ActivityDocument[];students:{id:string;name:string;active:boolean}[];studentId?:string;today:string;ready:boolean}){
- const [pending,startTransition]=useTransition();const [message,setMessage]=useState("");const [filter,setFilter]=useState("open");
- const visible=activities.filter(activity=>filter==="all"?true:filter==="archived"?Boolean(activity.archived_at):filter==="delivered"?Boolean(activity.submission?.submitted_at)&&!activity.reviewed_at&&!activity.archived_at:filter==="reviewed"?Boolean(activity.reviewed_at)&&!activity.archived_at:!activity.archived_at&&!activity.reviewed_at);
- return <div className="space-y-6"><section className="card"><div className="section-heading"><div><h2>Enviar atividade</h2><p>Reutilize um material da biblioteca e receba a devolução pelo link do aluno.</p></div><Link href="/documentos" className="btn-xs">Abrir biblioteca</Link></div>{!ready?<p className="mt-5 text-sm text-muted">As atividades estão em preparação.</p>:<form onSubmit={event=>{event.preventDefault();const form=event.currentTarget;const data=new FormData(form);setMessage("");startTransition(async()=>{try{const result=await assignActivity({studentId:studentId??String(data.get("student_id")),documentId:String(data.get("document_id")??""),title:String(data.get("title")),instructions:String(data.get("instructions")??""),dueOn:String(data.get("due_on")??"")});setMessage(result.ok?"Atividade enviada para o link do aluno.":result.message);if(result.ok)form.reset();}catch{setMessage("Não foi possível enviar a atividade.");}});}} className="mt-5 space-y-4"><fieldset disabled={pending} className="activity-assignment-grid">{!studentId&&<div><label className="label" htmlFor="activity-student">Aluno</label><select className="input" id="activity-student" name="student_id" required defaultValue=""><option value="" disabled>Selecione um aluno</option>{students.map(student=><option key={student.id} value={student.id}>{student.name}{!student.active?" · inativo":""}</option>)}</select></div>}<div><label className="label" htmlFor="activity-title">Título da atividade</label><input className="input" id="activity-title" name="title" required maxLength={120} placeholder="Ex.: Voz passiva · exercícios"/></div><div><label className="label" htmlFor="activity-document">Arquivo da biblioteca (opcional)</label><select className="input" id="activity-document" name="document_id" defaultValue=""><option value="">Sem anexo · usar instruções abaixo</option>{documents.map(document=><option key={document.id} value={document.id}>{document.title}</option>)}</select></div><div><label className="label" htmlFor="activity-due">Entregar até (opcional)</label><input className="input" id="activity-due" name="due_on" type="date" min={today}/></div><div className="activity-instructions-field"><label className="label" htmlFor="activity-instructions">Instruções para o aluno (opcional)</label><textarea className="input" id="activity-instructions" name="instructions" rows={3} maxLength={4000} placeholder="O que fazer e como devolver a atividade…"/></div><button className="btn justify-self-start">{pending?"Enviando…":"Enviar atividade"}</button></fieldset></form>}{message&&<p role="status" className="mt-4 text-xs text-accent">{message}</p>}</section><div className="filter-tabs activity-filters" aria-label="Filtrar atividades">{[{id:"open",label:"Em aberto"},{id:"delivered",label:"Entregues"},{id:"reviewed",label:"Conferidas"},{id:"archived",label:"Arquivadas"},{id:"all",label:"Todas"}].map(item=><button key={item.id} className={filter===item.id?"filter-active":""} aria-pressed={filter===item.id} onClick={()=>setFilter(item.id)}>{item.label}</button>)}</div>{visible.length?visible.map(activity=><ActivityItem key={activity.id} activity={activity} today={today}/>):<section className="card empty-state"><h3>Nenhuma atividade neste filtro</h3><p>As atividades enviadas e suas entregas aparecem aqui.</p></section>}</div>;
+export function TeacherActivities({ activities, documents, students, studentId, today, ready }: {
+    activities: Activity[];
+    documents: ActivityDocument[];
+    students: {
+        id: string;
+        name: string;
+        active: boolean;
+    }[];
+    studentId?: string;
+    today: string;
+    ready: boolean;
+}) {
+    const { t } = useI18n();
+    const [pending, startTransition] = useTransition();
+    const [message, setMessage] = useState("");
+    const [filter, setFilter] = useState("open");
+    const visible = activities.filter(activity => filter === "all" ? true : filter === "archived" ? Boolean(activity.archived_at) : filter === "delivered" ? Boolean(activity.submission?.submitted_at) && !activity.reviewed_at && !activity.archived_at : filter === "reviewed" ? Boolean(activity.reviewed_at) && !activity.archived_at : !activity.archived_at && !activity.reviewed_at);
+    return <div className="space-y-6"><section className="card"><div className="section-heading"><div><h2>{t("Enviar atividade")}</h2><p>{t("Reutilize um material da biblioteca e receba a devolu\u00E7\u00E3o pelo link do aluno.")}</p></div><Link href="/documents" className="btn-xs">{t("Abrir biblioteca")}</Link></div>{!ready ? <p className="mt-5 text-sm text-muted">{t("As atividades est\u00E3o em prepara\u00E7\u00E3o.")}</p> : <form onSubmit={event => {
+                event.preventDefault();
+                const form = event.currentTarget;
+                const data = new FormData(form);
+                setMessage("");
+                startTransition(async () => {
+                    try {
+                        const result = await assignActivity({ studentId: studentId ?? String(data.get("student_id")), documentId: String(data.get("document_id") ?? ""), title: String(data.get("title")), instructions: String(data.get("instructions") ?? ""), dueOn: String(data.get("due_on") ?? "") });
+                        setMessage(result.ok ? "Atividade enviada para o link do aluno." : result.message);
+                        if (result.ok)
+                            form.reset();
+                    }
+                    catch {
+                        setMessage("Não foi possível enviar a atividade.");
+                    }
+                });
+            }} className="mt-5 space-y-4"><fieldset disabled={pending} className="activity-assignment-grid">{!studentId && <div><label className="label" htmlFor="activity-student">{t("Aluno")}</label><select className="input" id="activity-student" name="student_id" required defaultValue=""><option value="" disabled>{t("Selecione um aluno")}</option>{students.map(student => <option key={student.id} value={student.id}>{student.name}{!student.active ? t(" \u00B7 inativo") : t("")}</option>)}</select></div>}<div><label className="label" htmlFor="activity-title">{t("T\u00EDtulo da atividade")}</label><input className="input" id="activity-title" name="title" required maxLength={120} placeholder={t("Ex.: Voz passiva \u00B7 exerc\u00EDcios")}/></div><div><label className="label" htmlFor="activity-document">{t("Arquivo da biblioteca (opcional)")}</label><select className="input" id="activity-document" name="document_id" defaultValue=""><option value="">{t("Sem anexo \u00B7 usar instru\u00E7\u00F5es abaixo")}</option>{documents.map(document => <option key={document.id} value={document.id}>{document.title}</option>)}</select></div><div><label className="label" htmlFor="activity-due">{t("Entregar at\u00E9 (opcional)")}</label><input className="input" id="activity-due" name="due_on" type="date" min={today}/></div><div className="activity-instructions-field"><label className="label" htmlFor="activity-instructions">{t("Instru\u00E7\u00F5es para o aluno (opcional)")}</label><textarea className="input" id="activity-instructions" name="instructions" rows={3} maxLength={4000} placeholder={t("O que fazer e como devolver a atividade\u2026")}/></div><button className="btn justify-self-start">{pending ? t("Enviando\u2026") : t("Enviar atividade")}</button></fieldset></form>}{message && <p role="status" className="mt-4 text-xs text-accent">{t(message)}</p>}</section><div className="filter-tabs activity-filters" aria-label={t("Filtrar atividades")}>{[{ id: "open", label: "Em aberto" }, { id: "delivered", label: "Entregues" }, { id: "reviewed", label: "Conferidas" }, { id: "archived", label: "Arquivadas" }, { id: "all", label: "Todas" }].map(item => <button key={item.id} className={filter === item.id ? "filter-active" : ""} aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>{t(item.label)}</button>)}</div>{visible.length ? visible.map(activity => <ActivityItem key={activity.id} activity={activity} today={today}/>) : <section className="card empty-state"><h3>{t("Nenhuma atividade neste filtro")}</h3><p>{t("As atividades enviadas e suas entregas aparecem aqui.")}</p></section>}</div>;
 }

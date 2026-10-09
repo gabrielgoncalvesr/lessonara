@@ -10,6 +10,8 @@ export type Student = {
   name: string;
   email: string | null;
   phone?: string | null;
+  phone_country?: string | null;
+  weekly_lessons?: number | null;
   plan_id: string | null;
   price_override: number | null;
   active: boolean;
@@ -23,6 +25,7 @@ export type Teacher = {
 };
 
 export type Plan = {
+  weekly_lessons?: number;
   id: string;
   name: string;
   lessons: number;

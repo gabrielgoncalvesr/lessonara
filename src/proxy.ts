@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/a/", "/api/cron/"];
+import { isPublicPath } from "@/lib/public-routes";
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -24,7 +24,7 @@ export async function proxy(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const path = request.nextUrl.pathname;
-  if (!data?.claims && !PUBLIC_PATHS.some((p) => path.startsWith(p))) {
+  if (!data?.claims && !isPublicPath(path)) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
   return response;

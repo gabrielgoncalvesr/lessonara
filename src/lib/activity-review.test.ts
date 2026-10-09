@@ -2,7 +2,7 @@ import { beforeEach,expect,it,vi } from "vitest";
 const mocks=vi.hoisted(()=>({user:vi.fn(),update:vi.fn()}));
 vi.mock("@/lib/supabase/server",()=>({requireUser:mocks.user,createAdminClient:vi.fn()}));
 vi.mock("next/cache",()=>({revalidatePath:vi.fn()}));
-import { reviewActivity } from "@/app/(painel)/atividades/actions";
+import { reviewActivity } from "@/app/(panel)/activities/actions";
 beforeEach(()=>vi.resetAllMocks());
 it.each([[{submitted_at:"2026-10-07T23:00:00Z"}],{submitted_at:"2026-10-07T23:00:00Z"}])("confere entregas com as duas formas de relação do Supabase",async submissions=>{
  const query={select(){return query;},eq(){return query;},async maybeSingle(){return {error:null,data:{student_id:"student",students:{slug:"link"},activity_submissions:submissions}};}};

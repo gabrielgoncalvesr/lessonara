@@ -1,0 +1,74 @@
+import { randomUUID } from "node:crypto";
+import { createAdminClient } from "@/lib/supabase/server";
+import { EmailSendError, sendEmail, type EmailInput } from "@/lib/email";
+import { seal, unseal } from "./crypto";
+import { otpEmail, reminderEmail, welcomeEmail } from "./templates";
+
+type MailStudent = { name: string; email: string; active: boolean; teachers: { name: string; email: string } };
+type Job = { id: string; event_key: string; lease_id: string; student_id: string | null; recipient: string; template: "otp" | "welcome" | "reminder"; payload: Record<string, string>; attempts: number; delivery: { sealed: string } | null; expires_at: string };
+
+export async function enqueueOtp(email: string, code: string, challengeId: string) {
+  const db = createAdminClient();
+  const id = randomUUID();
+  const { error } = await db.from("email_outbox").insert({ id, event_key: `otp/${challengeId}`, recipient: email, template: "otp", payload: { sealed: seal({ code }) }, expires_at: new Date(Date.now() + 10 * 60_000).toISOString() });
+  if (error) throw new Error("Não foi possível preparar o email de acesso.");
+  return id;
+}
+
+export async function enqueueReminder(input: { studentId: string; teacherId: string; email: string; credits: number; message: string }) {
+  const { error } = await createAdminClient().from("email_outbox").upsert({ event_key: `reminder/${input.studentId}/${input.credits}`, student_id: input.studentId, teacher_id: input.teacherId, recipient: input.email, template: "reminder", payload: { message: input.message } }, { onConflict: "event_key", ignoreDuplicates: true });
+  if (error) throw new Error("Não foi possível registrar o lembrete.");
+}
+
+/** Claim com lease e SKIP LOCKED evita dois workers enviarem o mesmo trabalho. */
+export async function processEmails(id?: string) {
+  const db = createAdminClient();
+  const { data, error } = await db.rpc("claim_email_jobs", { p_limit: 10, p_id: id ?? null });
+  if (error) throw new Error("Não foi possível processar a fila de emails.");
+  const result = { sent: 0, failed: 0, pending: 0, cancelled: 0 };
+  for (const job of (data ?? []) as Job[]) {
+    async function finish(values: Record<string, unknown>) {
+      const { error } = await db.from("email_outbox").update(values).eq("id", job.id).eq("lease_id", job.lease_id).eq("status", "sending");
+      if (error) throw new Error("Não foi possível atualizar o estado do email.");
+    }
+    try {
+      let body: EmailInput;
+      // Revalida o destinatário mesmo no retry de um email já materializado.
+      let student: MailStudent | null = null;
+      if (job.student_id) {
+        const row = await db.from("students").select("name,email,active,teachers(name,email)").eq("id", job.student_id).maybeSingle<MailStudent>();
+        if (row.error) throw new EmailSendError("database_unavailable", true);
+        student = row.data;
+        if (!student || !student.active || student.email?.trim().toLowerCase() !== job.recipient) {
+          await finish({ status: "cancelled", payload: {}, delivery: null }); result.cancelled++; continue;
+        }
+      }
+      if (job.template === "otp") {
+        const challengeKey = job.event_key.slice(4);
+        const challenge = await db.from("student_auth_challenges").select("id").eq("id", challengeKey).is("consumed_at", null).gt("expires_at", new Date().toISOString()).maybeSingle();
+        if (challenge.error) throw new EmailSendError("database_unavailable", true);
+        if (!challenge.data) { await finish({ status: "cancelled", payload: {}, delivery: null }); result.cancelled++; continue; }
+      }
+      if (job.delivery) body = unseal<EmailInput>(job.delivery.sealed);
+      else {
+        const content = job.template === "otp" ? otpEmail(unseal<{ code: string }>(job.payload.sealed).code)
+          : job.template === "welcome" ? welcomeEmail(student!.name, student!.teachers.name)
+          : reminderEmail(student!.name, student!.teachers.name, job.payload.message);
+        body = { ...content, to: job.recipient, from: process.env.EMAIL_FROM || "Lessonara <onboarding@resend.dev>", ...(student?.teachers.email && !/\.(test|invalid|localhost)$/i.test(student.teachers.email) ? { replyTo: student.teachers.email } : process.env.EMAIL_REPLY_TO ? { replyTo: process.env.EMAIL_REPLY_TO } : {}) };
+        // Corpo/remetente imutáveis para retries com a mesma chave do Resend.
+        await finish({ delivery: { sealed: seal(body) } });
+      }
+      if (Date.parse(job.expires_at) <= Date.now()) { await finish({ status: "failed", last_error: "Prazo de envio encerrado.", payload: {}, delivery: null }); result.failed++; continue; }
+      const sent = await sendEmail(body, `lessonara/${job.id}`);
+      await finish({ status: "sent", provider_id: sent.id, sent_at: new Date().toISOString(), last_error: null, payload: {}, delivery: null });
+      result.sent++;
+    } catch (error) {
+      const retry = error instanceof EmailSendError && error.retryable && job.attempts < 5;
+      const next = Date.now() + Math.min(600, 30 * 2 ** (job.attempts - 1)) * 1000;
+      const pending = retry && next < Date.parse(job.expires_at);
+      await finish({ status: pending ? "pending" : "failed", available_at: new Date(next).toISOString(), last_error: error instanceof EmailSendError ? error.code : "Falha interna no processamento.", ...(!pending ? { payload: {}, delivery: null } : {}) });
+      if (pending) result.pending++; else result.failed++;
+    }
+  }
+  return result;
+}

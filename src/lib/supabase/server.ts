@@ -25,7 +25,7 @@ export async function createClient() {
   });
 }
 
-/** Cliente com a secret key: ignora RLS. Usar na página/link do aluno e no cron, com autorização explícita no servidor. */
+/** Cliente com a secret key: ignora RLS. Usar somente após autorização explícita no servidor e no cron. */
 export function createAdminClient() {
   return createSupabaseClient(url, process.env.SUPABASE_SECRET_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -36,5 +36,7 @@ export async function requireUser() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims) throw new Error("Não autenticado");
+  const teacher = await supabase.from("teachers").select("id").eq("id", data.claims.sub).maybeSingle();
+  if (teacher.error || !teacher.data) throw new Error("Acesso de professora necessário.");
   return { supabase, userId: data.claims.sub as string };
 }

@@ -4,9 +4,9 @@ import { DOCUMENT_BUCKET } from "./document-rules";
 import { studentActivity } from "./activity-access";
 const headers={"Cache-Control":"private, no-store","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow"};
 const missing=()=>new Response("Arquivo não encontrado.",{status:404,headers});
-export async function activityDownload(activityId:string,kind:"source"|"submission",slug?:string){
+export async function activityDownload(activityId:string,kind:"source"|"submission",slug?:string,kindOfId:"id"|"slug"="id"){
  const user=slug?null:await requireUser();const supabase=user?.supabase??createAdminClient();
- const activity=slug?await studentActivity(supabase,slug,activityId):(await supabase.from("activities").select("id,teacher_id,student_id,document_id").eq("id",activityId).eq("teacher_id",user!.userId).maybeSingle()).data;
+ const activity=slug?await studentActivity(supabase,slug,activityId,kindOfId):(await supabase.from("activities").select("id,teacher_id,student_id,document_id").eq("id",activityId).eq("teacher_id",user!.userId).maybeSingle()).data;
  if(!activity)return missing();let path:string;let name:string;let bucket:string;
  if(kind==="source"){
   if(!activity.document_id)return missing();const document=await supabase.from("documents").select("storage_path,file_name").eq("id",activity.document_id).eq("teacher_id",activity.teacher_id).eq("status","ready").maybeSingle();if(document.error||!document.data)return missing();path=document.data.storage_path;name=document.data.file_name;bucket=DOCUMENT_BUCKET;

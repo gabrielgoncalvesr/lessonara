@@ -1,3 +1,4 @@
+import {localeTag,type Locale} from "./i18n/core";
 // Datas no formato ISO "YYYY-MM-DD", tratadas sempre em UTC para não sofrer com fuso.
 export const TZ = "America/Sao_Paulo";
 
@@ -37,15 +38,16 @@ export function nowInTZ(now = new Date()): { today: string; time: string } {
   return { today: `${get("year")}-${get("month")}-${get("day")}`, time: `${get("hour")}:${get("minute")}` };
 }
 
-export function formatDate(date: string): string {
-  const [y, m, d] = date.split("-");
-  return `${d}/${m}/${y}`;
+export function formatDate(date: string, locale:Locale="pt-BR"): string {
+ return new Intl.DateTimeFormat(localeTag(locale),{timeZone:"UTC",day:"2-digit",month:"2-digit",year:"numeric"}).format(toUTC(date));
 }
 
-export function formatDateLong(date: string): string {
-  return `${WEEKDAYS[weekday(date)].slice(0, 3).toLowerCase()}, ${formatDate(date).slice(0, 5)}`;
+export function formatDateLong(date: string,locale:Locale="pt-BR"): string {
+ const day=new Intl.DateTimeFormat(localeTag(locale),{timeZone:"UTC",weekday:"short"}).format(toUTC(date)).replace(/\.$/,"");
+ const short=new Intl.DateTimeFormat(localeTag(locale),{timeZone:"UTC",day:"2-digit",month:"2-digit"}).format(toUTC(date));
+ return `${day}, ${short}`;
 }
 
-export function formatBRL(value: number): string {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export function formatBRL(value: number,locale:Locale="pt-BR"): string {
+  return value.toLocaleString(localeTag(locale), { style: "currency", currency: "BRL" });
 }

@@ -1,31 +1,35 @@
 "use client";
-
+import {useI18n} from "@/components/browser-preferences-provider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "./icon";
-
-const links: { href: string; label: string; icon: IconName }[] = [
-  { href: "/", label: "Visão geral", icon: "grid" },
-  { href: "/pagamentos", label: "Pagamentos", icon: "book" },
-  { href: "/financeiro", label: "Financeiro", icon: "chart" },
-  { href: "/documentos", label: "Documentos", icon: "book" },
-  { href: "/atividades", label: "Atividades", icon: "check" },
-  { href: "/alunos", label: "Alunos", icon: "users" },
-  { href: "/config", label: "Configurações", icon: "settings" },
+const links: {
+    href: string;
+    label: string;
+    icon: IconName;
+}[] = [
+    { href: "/", label: "Visão geral", icon: "grid" },
+    { href: "/payments", label: "Pagamentos", icon: "book" },
+    { href: "/finance", label: "Financeiro", icon: "chart" },
+    { href: "/documents", label: "Documentos", icon: "book" },
+    { href: "/activities", label: "Atividades", icon: "check" },
+    { href: "/students", label: "Alunos", icon: "users" },
+    { href: "/emails", label: "Emails", icon: "book" },
+    { href: "/settings", label: "Configurações", icon: "settings" },
 ];
-
 export function PanelNav() {
-  const pathname = usePathname();
-  return <NavLinks pathname={pathname} />;
+    const pathname = usePathname();
+    return <NavLinks pathname={pathname}/>;
 }
-
 export function PanelNavFallback() {
-  return <NavLinks />;
+    return <NavLinks />;
 }
-
-function NavLinks({ pathname }: { pathname?: string }) {
-  return <nav className="panel-nav" aria-label="Navegação principal">{links.map(({ href, label, icon }) => {
-    const active = pathname !== undefined && (href === "/alunos" ? pathname === "/alunos" || pathname.startsWith("/alunos/") : pathname === href);
-    return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`nav-link ${active ? "nav-active" : ""}`}><Icon name={icon} /><span>{label}</span>{active && <span className="nav-dot" />}</Link>;
-  })}</nav>;
+function NavLinks({ pathname }: {
+    pathname?: string;
+}) {
+    const { t } = useI18n();
+    return <nav className="panel-nav" aria-label={t("Navega\u00E7\u00E3o principal")}>{links.map(({ href, label, icon }) => {
+            const active = pathname !== undefined && (href === "/students" ? pathname === "/students" || pathname.startsWith("/students/") : pathname === href);
+            return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`nav-link ${active ? "nav-active" : ""}`}><Icon name={icon}/><span>{t(label)}</span>{active && <span className="nav-dot"/>}</Link>;
+        })}</nav>;
 }
