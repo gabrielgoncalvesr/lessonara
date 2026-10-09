@@ -4,7 +4,7 @@ import { useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react"
 import { Icon } from "./icon";
 const tabs = [
     { id: "aulas", hash: "lessons", label: "Aulas", icon: "calendar" },
-    { id: "pacotes", hash: "pagamentos", label: "Pacotes pagos", icon: "book" },
+    { id: "pacotes", hash: "payments", label: "Pacotes pagos", icon: "book" },
     { id: "horarios", hash: "schedule", label: "Horários", icon: "clock" },
     { id: "dados", hash: "details", label: "Dados do aluno", icon: "users" },
     { id: "atividades", hash: "activities", label: "Atividades", icon: "check" },
@@ -24,7 +24,7 @@ function subscribe(onChange: () => void) {
 }
 function selectedTab(): TabId {
     const hash = window.location.hash.slice(1);
-    return tabs.find((tab) => tab.hash === hash || tab.id === hash)?.id ?? "aulas";
+    return tabs.find((tab) => tab.hash === hash || tab.id === hash || (hash === "pagamentos" && tab.id === "pacotes"))?.id ?? "aulas";
 }
 function selectTab(id: TabId) {
     const tab = tabs.find((item) => item.id === id)!;

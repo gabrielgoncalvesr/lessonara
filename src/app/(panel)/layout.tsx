@@ -9,7 +9,7 @@ import { signOut } from "../login/actions";
 export default async function PainelLayout({ children }: LayoutProps<"/">) {
     const { t } = await getTranslator();
     return (<div className="app-shell">
-      <a href="#conteudo" className="skip-link">{t("Pular para o conte\u00FAdo")}</a>
+      <a href="#content" className="skip-link">{t("Pular para o conte\u00FAdo")}</a>
       <aside className="sidebar">
         <Link href="/" className="brand"><LogoMark className="h-9 w-9 text-accent"/><span>{t("lessonara")}<span className="brand-dot">{t(".")}</span></span></Link>
         <p className="sidebar-label">{t("SEU ESPA\u00C7O DE ENSINO")}</p>
@@ -18,7 +18,7 @@ export default async function PainelLayout({ children }: LayoutProps<"/">) {
       </aside>
       <div className="workspace">
         <header className="workspace-header"><span><span className="text-muted">{t("Meu espa\u00E7o")}</span><span className="mx-3 text-line">{t("/")}</span><span className="font-medium">{t("Gest\u00E3o de aulas")}</span></span></header>
-        <div id="conteudo" className="workspace-content">{children}</div>
+        <div id="content" className="workspace-content">{children}</div>
         <footer className="workspace-footer">{t("Lessonara")}<span>{t("Um pouco de organiza\u00E7\u00E3o. Muito mais espa\u00E7o para ensinar.")}</span></footer>
       </div>
     </div>);
