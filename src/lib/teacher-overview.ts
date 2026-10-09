@@ -6,12 +6,10 @@ import { requireUser } from "./supabase/server";
 
 export async function loadTeacherOverview(includeCalendar = false) {
   const { supabase, userId } = await requireUser();
-  const [{ data, error }, { data: teacher }] = await Promise.all([
-    supabase.from("students").select("*, plans(id, name, lessons, price)").order("name"),
-    supabase.from("teachers").select("name").eq("id", userId).maybeSingle<Pick<Teacher, "name">>(),
-  ]);
-  if (error) throw error;
-  const students = (data ?? []) as (Student & { plans: Plan | null })[];
+  const teacherQuery=supabase.from("teachers").select("name").eq("id",userId).maybeSingle<Pick<Teacher,"name">>();
+  const students:(Student&{plans:Plan|null})[]=[];
+  for(let page=0;;page+=1000){const result=await supabase.from("students").select("*,plans(id,name,lessons,price)").eq("teacher_id",userId).order("name").order("id").range(page,page+999);if(result.error)throw result.error;students.push(...((result.data??[]) as (Student&{plans:Plan|null})[]));if((result.data?.length??0)<1000)break;}
+  const {data:teacher}=await teacherQuery;
   const ledgers = await loadLedgers(supabase, students.map((student) => student.id));
   const origin = await getOrigin();
   const { today, time } = nowInTZ();

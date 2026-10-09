@@ -1,4 +1,7 @@
 "use server";
+import {after} from "next/server";
+import {processCalendarJobs} from "@/lib/google/worker";
+import {suggestedHolidays} from "@/lib/holiday-suggestions";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/supabase/server";
 import { nowInTZ, addDays } from "@/lib/dates";
@@ -24,3 +27,5 @@ export async function removeHoliday(id: string): Promise<Result> {
  if(error || !data) return {ok:false,message:"Não foi possível remover. Feriados de hoje ou anteriores são preservados."};
  revalidatePath("/","layout");return {ok:true};
 }
+
+export async function saveSuggestedHolidays(year:number,dates:string[]):Promise<Result>{const {supabase,userId}=await requireUser();const choices=suggestedHolidays(year,nowInTZ().today);if(!Array.isArray(dates)||dates.length>9||!dates.length||dates.some(date=>!choices.some(item=>item.date===date)))return {ok:false,message:"Confira os feriados selecionados."};const rows=choices.filter(item=>dates.includes(item.date)).map(item=>({...item,teacher_id:userId}));const saved=await supabase.from("holidays").upsert(rows,{onConflict:"teacher_id,date",ignoreDuplicates:true});if(saved.error)return {ok:false,message:"Não foi possível salvar as sugestões."};after(async()=>{try{await processCalendarJobs(userId);}catch{console.error("calendar_queue_failed");}});revalidatePath("/","layout");return {ok:true};}

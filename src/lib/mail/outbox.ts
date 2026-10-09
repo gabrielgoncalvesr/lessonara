@@ -1,10 +1,11 @@
+import {createWelcomeInvite} from "./welcome-invite";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/server";
 import { EmailSendError, sendEmail, type EmailInput } from "@/lib/email";
 import { seal, unseal } from "./crypto";
 import { otpEmail, reminderEmail, welcomeEmail } from "./templates";
 
-type MailStudent = { teacher_id:string;slug:string;name: string; email: string; active: boolean; teachers: { name: string; email: string } };
+type MailStudent = { id:string;access_version:number;teacher_id:string;slug:string;name: string; email: string; active: boolean; teachers: { name: string; email: string } };
 type Job = { id: string; event_key: string; lease_id: string; student_id: string | null; recipient: string; template: "otp" | "welcome" | "reminder"; payload: Record<string, string>; attempts: number; delivery: { sealed: string } | null; expires_at: string };
 
 export async function enqueueOtp(email: string, code: string, challengeId: string,studentId?:string) {
@@ -36,7 +37,7 @@ export async function processEmails(id?: string) {
       // Revalida o destinatário mesmo no retry de um email já materializado.
       let student: MailStudent | null = null;
       if (job.student_id) {
-        const row = await db.from("students").select("teacher_id,slug,name,email,active,teachers(name,email)").eq("id", job.student_id).maybeSingle<MailStudent>();
+        const row = await db.from("students").select("id,access_version,teacher_id,slug,name,email,active,teachers(name,email)").eq("id", job.student_id).maybeSingle<MailStudent>();
         if (row.error) throw new EmailSendError("database_unavailable", true);
         student = row.data;
         if (!student || !student.active || student.email?.trim().toLowerCase() !== job.recipient) {
@@ -52,7 +53,7 @@ export async function processEmails(id?: string) {
       if (job.delivery) body = unseal<EmailInput>(job.delivery.sealed);
       else {
         const content = job.template === "otp" ? otpEmail(unseal<{ code: string }>(job.payload.sealed).code)
-          : job.template === "welcome" ? welcomeEmail(student!.name, student!.teachers.name,student!.teacher_id,student!.slug)
+          : job.template === "welcome" ? welcomeEmail(student!.name, student!.teachers.name,student!.teacher_id,student!.slug,await createWelcomeInvite(student!))
           : reminderEmail(student!.name, student!.teachers.name, job.payload.message,student!.teacher_id,student!.slug);
         body = { ...content, to: job.recipient, from: process.env.EMAIL_FROM || "Lessonara <onboarding@resend.dev>", ...(student?.teachers.email && !/\.(test|invalid|localhost)$/i.test(student.teachers.email) ? { replyTo: student.teachers.email } : process.env.EMAIL_REPLY_TO ? { replyTo: process.env.EMAIL_REPLY_TO } : {}) };
         // Corpo/remetente imutáveis para retries com a mesma chave do Resend.

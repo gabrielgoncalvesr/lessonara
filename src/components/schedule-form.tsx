@@ -1,41 +1,11 @@
 "use client";
-import {BusyContent} from "@/components/busy-content";
-import { useI18n } from "@/components/browser-preferences-provider";
-import { useRef, useState, useTransition, type FormEvent } from "react";
-import { TimeField } from "./time-field";
-import { WEEKDAYS } from "@/lib/dates";
-import { canAddWeeklySchedule } from "@/lib/schedule-rules";
-import type { Schedule } from "@/lib/ledger";
-import { addSchedule } from "@/app/(panel)/actions";
-export function ScheduleForm({ studentId, schedules, limit, today }: {
-    studentId: string;
-    schedules: Schedule[];
-    limit: number;
-    today: string;
-}) {
-    const { t } = useI18n();
-    const [day, setDay] = useState(1);
-    const [startsOn, setStartsOn] = useState(today);
-    const [pending, startTransition] = useTransition();
-    const [message, setMessage] = useState("");
-    const running=useRef(false);
-    const allowed = Boolean(startsOn) && canAddWeeklySchedule(schedules, limit, startsOn, day);
-    function submit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        if (!allowed || pending || running.current)
-            return;
-        running.current=true;
-        const data = new FormData(event.currentTarget);
-        setMessage("");
-        startTransition(async () => {
-            try {
-                await addSchedule(studentId, data);
-                setMessage("Horário adicionado.");
-            }
-            catch {
-                setMessage("Não foi possível adicionar. Confira a frequência semanal e atualize a página.");
-            } finally { running.current=false; }
-        });
-    }
-    return <div className="schedule-config"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="text-sm font-semibold">{t("Configurar novo hor\u00E1rio")}</h3><span className="text-xs text-muted">{limit} {limit === 1 ? t("hor\u00E1rio semanal permitido") : t("hor\u00E1rios semanais permitidos")}</span></div><form onSubmit={submit}><fieldset disabled={!limit || pending} className="grid grid-cols-2 gap-2 sm:grid-cols-4"><div><label className="label" htmlFor="schedule-day">{t("Dia")}</label><select id="schedule-day" name="weekday" className="input" value={day} onChange={(event) => setDay(Number(event.target.value))}>{WEEKDAYS.map((name, index) => <option key={name} value={index}>{t(name)}</option>)}</select></div><div><label className="label" htmlFor="schedule-time">{t("Hora")}</label><TimeField id="schedule-time"/></div><div><label className="label" htmlFor="schedule-start">{t("A partir de")}</label><input id="schedule-start" className="input" name="starts_on" type="date" required value={startsOn} onChange={(event) => setStartsOn(event.target.value)}/></div><div className="flex items-end"><button className="btn w-full" type="submit" disabled={!allowed || pending}><BusyContent pending={pending}>{pending ? t("Adicionando\u2026") : t("Adicionar hor\u00E1rio")}</BusyContent></button></div></fieldset></form><p className="mt-3 text-xs leading-relaxed text-muted">{!limit ? t("Defina as aulas por semana nos dados do aluno para configurar os hor\u00E1rios.") : !allowed ? t("A frequ\u00EAncia semanal j\u00E1 tem todos os hor\u00E1rios permitidos. Encerre um hor\u00E1rio existente antes de adicionar outro.") : t("A quantidade de hor\u00E1rios segue as aulas por semana do aluno. Para mudar de dia, encerre o antigo e adicione o novo.")}</p>{message && <p role="status" className="mt-3 text-xs text-accent">{t(message)}</p>}</div>;
+import {AvailabilityPreview} from "./availability-preview";
+import {firstPlannedDate} from "@/lib/plan-frequency";
+import {useState,useRef,useTransition,type FormEvent} from "react";import {useI18n} from "./browser-preferences-provider";import {BusyContent} from "./busy-content";import {Icon} from "./icon";import {TimeField} from "./time-field";import {formatDate,WEEKDAYS} from "@/lib/dates";import type {Schedule} from "@/lib/ledger";import {addSchedule} from "@/app/(panel)/actions";import type {FrequencyPeriod,SchedulingMode} from "@/lib/plan-frequency";
+export function ScheduleForm({studentId,schedules,frequency,today,appointments=[]}:{studentId:string;schedules:Schedule[];frequency:{period:FrequencyPeriod;count:number;mode:SchedulingMode};today:string;limit?:number;appointments?:{id:string;date:string;time:string}[]}){
+ const {t,locale}=useI18n();const [day,setDay]=useState(1);const [time,setTime]=useState("");const [startsOn,setStartsOn]=useState(today);const [pending,start]=useTransition();const [message,setMessage]=useState("");const running=useRef(false);const active=schedules.filter(s=>!s.ends_on||s.ends_on>=startsOn);const flexible=frequency.mode==="flexible";const configured=active.length>=frequency.count;const month=startsOn.slice(0,7);const planned=appointments.filter(a=>a.date.startsWith(month));
+ function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();if(pending||running.current)return;running.current=true;const data=new FormData(e.currentTarget);setMessage("");start(async()=>{try{await addSchedule(studentId,data);setMessage("Aula agendada.");}catch(error){setMessage((error as Error).message||"Não foi possível agendar.");}finally{running.current=false;}});}
+ if(!frequency.count)return <p className="text-sm text-muted">{t("Escolha o plano do aluno para configurar os horários.")}</p>;
+ if(!flexible&&configured)return <p className="text-xs text-muted">{t("Todos os horários do plano estão configurados.")}</p>;
+ return <div className="schedule-config"><h3 className="mb-4 text-sm font-semibold">{t(flexible?"Agendar aula avulsa":"Configurar novo horário")}</h3><p className="mb-4 text-xs text-muted">{frequency.count} {t(frequency.period==="week"?"aulas por semana":"aulas por mês")}{flexible?` · ${planned.length} ${t("agendadas neste mês")}`:""}</p><form onSubmit={submit}><fieldset disabled={pending} className="grid grid-cols-2 gap-3 sm:grid-cols-4">{!flexible&&<div><label className="label">{t(frequency.period==="week"?"Dia da semana":"Dia do mês")}</label><select className="input" name={frequency.period==="week"?"weekday":"monthly_day"} value={day} onChange={e=>setDay(Number(e.target.value))}>{frequency.period==="week"?WEEKDAYS.map((name,index)=><option key={name} value={index}>{t(name)}</option>):Array.from({length:31},(_,i)=><option key={i} value={i+1}>{i+1}</option>)}</select></div>}<div><label className="label">{t(flexible?"Data da aula":"A partir de")}</label><input className="input" name={flexible?"date":"starts_on"} type="date" required value={startsOn} onChange={e=>setStartsOn(e.target.value)}/></div><div><label className="label">{t("Hora")}</label><TimeField id={`schedule-time-${studentId}`} value={time} onChange={setTime}/></div><div className="flex items-end"><button className="btn w-full" disabled={pending}><BusyContent pending={pending}><Icon name="plus" className="h-4 w-4"/>{t("Agendar aula")}</BusyContent></button></div></fieldset></form><AvailabilityPreview date={flexible?startsOn||today:firstPlannedDate(startsOn||today,frequency.period,day)} onPick={setTime}/>{frequency.period==="month"&&!flexible&&<p className="mt-3 text-xs text-muted">{t("Dias que não existem em um mês não geram aula naquele mês.")}</p>}{flexible&&planned.length>0&&<ul className="mt-4 text-xs text-muted">{planned.map(a=><li key={a.id} className="py-2 border-t border-line">{formatDate(a.date,locale)} · {a.time}</li>)}</ul>}{message&&<p role="status" className="mt-3 text-sm text-accent">{t(message)}</p>}</div>;
 }

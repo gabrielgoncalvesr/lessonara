@@ -1,3 +1,4 @@
+import {processCalendarJobs} from "@/lib/google/worker";
 import { createAdminClient } from "@/lib/supabase/server";
 import { processEmails } from "@/lib/mail/outbox";
 export async function GET(request: Request) {
@@ -8,5 +9,5 @@ export async function GET(request: Request) {
  await db.from("student_sessions").delete().lt("expires_at",now);
  await db.from("student_auth_challenges").delete().lt("expires_at",now);
  await db.from("student_auth_limits").delete().lt("window_start",new Date(Date.now()-24*3600_000).toISOString());
- return Response.json(await processEmails());
+ const email=await processEmails();const calendar=await processCalendarJobs();return Response.json({email,calendar});
 }

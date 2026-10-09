@@ -9,11 +9,11 @@ const links: {
     icon: IconName;
 }[] = [
     { href: "/", label: "Visão geral", icon: "grid" },
+    { href: "/students", label: "Alunos", icon: "users" },
     { href: "/payments", label: "Pagamentos", icon: "book" },
     { href: "/finance", label: "Financeiro", icon: "chart" },
     { href: "/documents", label: "Documentos", icon: "book" },
     { href: "/activities", label: "Atividades", icon: "check" },
-    { href: "/students", label: "Alunos", icon: "users" },
     { href: "/emails", label: "Emails", icon: "book" },
     { href: "/settings", label: "Configurações", icon: "settings" },
 ];

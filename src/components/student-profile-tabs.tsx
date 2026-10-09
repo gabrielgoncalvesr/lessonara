@@ -1,6 +1,6 @@
 "use client";
 import {useI18n} from "@/components/browser-preferences-provider";
-import { useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect,useState, type KeyboardEvent, type ReactNode } from "react";
 import { Icon } from "./icon";
 const tabs = [
     { id: "aulas", hash: "lessons", label: "Aulas", icon: "calendar" },
@@ -33,7 +33,8 @@ function selectTab(id: TabId) {
 }
 export function StudentProfileTabs(panels: Record<TabId, ReactNode>) {
     const { t } = useI18n();
-    const selected = useSyncExternalStore(subscribe, selectedTab, () => "aulas" as TabId);
+    const [selected,setSelected]=useState<TabId>("aulas");
+    useEffect(()=>{const update=()=>setSelected(selectedTab());update();return subscribe(update);},[]);
     function navigate(event: KeyboardEvent<HTMLButtonElement>, index: number) {
         if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
             return;

@@ -1,19 +1,3 @@
-import {ActionForm,SubmitButton} from "@/components/action-form";
-import { getTranslator } from "@/lib/i18n/server";
-import { localeTag } from "@/lib/i18n/core";
-import { Suspense } from "react";
-import PanelLoading from "../loading";
-import { requireUser } from "@/lib/supabase/server";
-import { retryPendingEmails } from "./actions";
-const labels: Record<string, string> = { pending: "Aguardando envio", sending: "Enviando", sent: "Enviado ao provedor", failed: "Falha no envio", cancelled: "Cancelado" };
-async function Emails() {
-    const { t, locale } = await getTranslator();
-    const { supabase, userId } = await requireUser();
-    const [jobs] = await Promise.all([
-        supabase.from("email_outbox").select("id,teacher_id,student_id,recipient,template,status,attempts,last_error,created_at,sent_at").eq("teacher_id", userId).order("created_at", { ascending: false }).limit(50)
-    ]);
-    if (jobs.error)
-        throw new Error("Não foi possível carregar os emails.");
-    return <main><div className="page-heading"><div><p className="eyebrow">{t("COMUNICA\u00C7\u00C3O COM OS ALUNOS")}</p><h1>{t("Emails")}</h1><p>{t("Boas-vindas automáticas e lembretes, com o estado de cada envio.")}</p></div><ActionForm action={retryPendingEmails}><SubmitButton className="btn-ghost">{t("Tentar envios pendentes")}</SubmitButton></ActionForm></div><section className="card mt-6"><h2 className="font-semibold">{t("\u00DAltimos envios")}</h2><p className="mt-2 text-xs text-muted">{t("Enviado ao provedor significa que o envio foi aceito; n\u00E3o confirma a chegada \u00E0 caixa de entrada.")}</p><ul className="mt-5 divide-y divide-line">{jobs.data?.map(job => <li key={job.id} className="py-4"><div className="flex flex-wrap justify-between gap-2"><p className="font-medium text-sm">{job.template === "welcome" ? t("Boas-vindas") : t("Renova\u00E7\u00E3o do pacote")}{t(" \u00B7 ")}{job.recipient}</p><span className={`text-xs ${job.status === "failed" ? "text-bad" : "text-muted"}`}>{t(labels[job.status])}</span></div><p className="mt-2 text-xs text-muted">{job.attempts}{t(" tentativa(s) \u00B7 ")}{new Date(job.created_at).toLocaleString(localeTag(locale), { timeZone: t("America/Sao_Paulo") })}</p>{job.last_error && <p className="mt-2 text-xs text-bad">{job.last_error}</p>}</li>)}</ul>{!jobs.data?.length && <p className="mt-5 text-sm text-muted">{t("Os emails enviados aos seus alunos aparecem aqui.")}</p>}</section></main>;
-}
-export default function EmailsPage() { return <Suspense fallback={<PanelLoading />}><Emails /></Suspense>; }
+import {Suspense} from "react";import {getTranslator} from "@/lib/i18n/server";import {requireUser} from "@/lib/supabase/server";import {EmailTimeline,type EmailStatus} from "@/components/email-timeline";import {ActionForm,SubmitButton} from "@/components/action-form";import {retryPendingEmails} from "./actions";import PanelLoading from "../loading";
+async function Emails(){const {t}=await getTranslator();const {supabase,userId}=await requireUser();const jobs=await supabase.from("email_outbox").select("id,recipient,template,status,attempts,last_error,created_at").eq("teacher_id",userId).order("created_at",{ascending:false}).limit(100);if(jobs.error)throw new Error("Não foi possível carregar os emails.");return <main><div className="page-heading"><div><p className="eyebrow">{t("COMUNICAÇÃO COM OS ALUNOS")}</p><h1>{t("Emails")}</h1><p>{t("Acompanhe os últimos 100 envios automáticos e lembretes de renovação.")}</p></div><ActionForm action={retryPendingEmails}><SubmitButton className="btn-ghost" icon="mail">{t("Tentar envios pendentes")}</SubmitButton></ActionForm></div><EmailTimeline jobs={(jobs.data??[]) as EmailStatus[]}/></main>;}
+export default function Page(){return <Suspense fallback={<PanelLoading/>}><Emails/></Suspense>;}

@@ -15,7 +15,7 @@ export function FinanceDashboard({ payments, today }: {
     const { t, locale } = useI18n();
     const currentYear = Number(today.slice(0, 4));
     const currentMonth = Number(today.slice(5, 7)) - 1;
-    const years = [...new Set([currentYear, ...payments.map((payment) => Number(payment.paidOn.slice(0, 4)))])].filter((year) => year <= currentYear).sort((a, b) => b - a);
+    const years = [...new Set([currentYear,currentYear+1,2027, ...payments.map((payment) => Number(payment.paidOn.slice(0, 4)))])].filter((year) => year <= Math.max(2027,currentYear+1)).sort((a, b) => b - a);
     const [year, setYear] = useState(currentYear);
     const [month, setMonth] = useState(currentMonth);
     const [receiptMonth, setReceiptMonth] = useState<number | "all">("all");

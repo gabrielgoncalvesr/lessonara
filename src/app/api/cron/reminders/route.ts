@@ -1,3 +1,4 @@
+import {processCalendarJobs} from "@/lib/google/worker";
 import { loadLedgers, type Student } from "@/lib/data";
 import { formatDate } from "@/lib/dates";
 import { enqueueReminder, processEmails } from "@/lib/mail/outbox";
@@ -51,5 +52,5 @@ export async function GET(request: Request) {
     await supabase.from("student_sessions").delete().lt("expires_at", now);
     await supabase.from("student_auth_challenges").delete().lt("expires_at", now);
     await supabase.from("student_auth_limits").delete().lt("window_start", new Date(Date.now() - 86400000).toISOString());
-    return Response.json({ checked: students.length, results, emails });
+    await processCalendarJobs();return Response.json({ checked: students.length, results, emails });
 }

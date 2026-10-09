@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const mocks=vi.hoisted(()=>({admin:vi.fn(),send:vi.fn(),updates:vi.fn(),student:vi.fn(),challenge:vi.fn(),claim:vi.fn()}));
+vi.mock("./welcome-invite",()=>({createWelcomeInvite:vi.fn().mockResolvedValue("https://lessonara.example/student/invite/test-invite")}));
 vi.mock("@/lib/supabase/server",()=>({createAdminClient:mocks.admin}));
 vi.mock("@/lib/email",async original=>{const emailModule=await original<typeof import("@/lib/email")>();return {...emailModule,sendEmail:mocks.send};});
 import {processEmails} from "./outbox";

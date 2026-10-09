@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
  cacheComponents:true,
  partialPrefetching:true,
- async headers(){return [{source:"/:path*",headers:[{key:"X-Robots-Tag",value:"noindex, nofollow, noarchive"}]}];},
+ async headers(){return [{source:"/student/:path*",headers:[{key:"Referrer-Policy",value:"no-referrer"}]},{source:"/p/:path*",headers:[{key:"Referrer-Policy",value:"no-referrer"}]},{source:"/:path*",headers:[{key:"X-Robots-Tag",value:"noindex, nofollow, noarchive"}]}];},
  async redirects(){return [
       { source: "/alunos/novo", destination: "/students/new", permanent: true },
       { source: "/alunos/:path*", destination: "/students/:path*", permanent: true },

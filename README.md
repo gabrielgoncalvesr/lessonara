@@ -128,9 +128,9 @@ Arquivos continuam em buckets privados e usam URLs assinadas curtas. Links já a
 
 ## Frequência semanal e telefones internacionais
 
-`0008_frequency_international_phone.sql` adiciona `plans.weekly_lessons`, o ajuste opcional `students.weekly_lessons` e `students.phone_country`. A frequência define a quantidade de horários recorrentes e não depende do último pacote pago. Pacotes continuam guardando quantidade de créditos e valor no momento do pagamento. Ao escolher um plano no formulário, a frequência padrão é preenchida e pode ser ajustada para aquele aluno.
+`0008_frequency_international_phone.sql` adiciona `plans.weekly_lessons`, o ajuste opcional `students.weekly_lessons` e `students.phone_country`. A frequência define a quantidade de horários recorrentes e não depende do último pacote pago. Pacotes continuam guardando quantidade de créditos e valor no momento do pagamento. A migration 0011 substitui o ajuste por aluno: a frequência passa a ser definida exclusivamente pelo plano.
 
-Na migração, a regra antiga é convertida uma única vez para os planos existentes (4 aulas → 1/semana; 8 → 2/semana). Depois disso, a frequência é uma configuração explícita. Alunos antigos sem ajuste herdam o plano; novos cadastros/edições salvam a quantidade escolhida. O banco serializa a inclusão de horários por aluno e rejeita sobreposições que excedam a frequência, inclusive horários futuros. Diminuir a frequência não apaga horários existentes: encerre os excedentes antes de cadastrar outros.
+Na migração, a regra antiga é convertida uma única vez para os planos existentes (4 aulas → 1/semana; 8 → 2/semana). Depois disso, a frequência é uma configuração explícita. O ajuste legado é preservado no banco para histórico, mas não define novos agendamentos. O banco serializa a inclusão de horários por aluno e rejeita sobreposições que excedam a frequência, inclusive horários futuros. Diminuir a frequência não apaga horários existentes: encerre os excedentes antes de cadastrar outros.
 
 O campo de telefone é compartilhado entre cadastro e diálogo do WhatsApp, com país, bandeira, DDI e formatação nacional. Novas gravações salvam o número no padrão E.164 (`+` e DDI) e o país ISO de duas letras. A biblioteca `libphonenumber-js` valida as regras internacionais; colar um número com `+DDI` reconhece o país. Números antigos são preservados e normalizados ao editar. Telefone continua opcional; o país escolhido é salvo mesmo sem número. O diálogo de cobrança só altera o destinatário da conversa; para atualizar o contato permanentemente, salve no cadastro do aluno.
 
@@ -147,3 +147,14 @@ Rotas canônicas usam inglês; as URLs antigas em português redirecionam. O sel
 A migration `0009_scoped_student_access.sql` vincula cada desafio a um aluno e invalida desafios anteriores sem contexto. Sessões existentes mantêm seu vínculo único. A renovação aparece antes do próximo encontro; o resumo de dia vazio mantém o separador e a mesma altura mínima de uma aula. Materiais vencidos aparecem com download indisponível, e o backend continua recusando downloads após o prazo. Atividades aceitam entregas atrasadas; entregas concluídas ficam recolhidas, com aviso de conferência. Materiais e atividades aceitam prazo nulo.
 
 Veja `FUTURE_FEATURES.md` para múltiplos professores por pessoa e acesso de responsáveis.
+
+
+## Planos, correções e integração de agenda
+
+As migrations 0010–0013 adicionam valores com centavos, correção com arquivo opcional, planos semanais (1–7) ou mensais (1–31), aulas mensais avulsas ou em dias fixos e reposições vinculadas a uma aula desmarcada. O limite mensal usa o mês do calendário; créditos pagos permanecem separados da frequência. Um dia fixo inexistente no mês não gera aula.
+
+O convite de boas-vindas é de uso único e vale 24 horas. A ativação explícita cria uma sessão de 30 dias para aquele aluno; depois disso o acesso pode ser renovado por OTP. Arquivos têm limite de 20 MB e compartilham a cota privada do professor. Atividades usam páginas de 20 itens por filtro e alunos de 50; o controle aparece somente quando necessário.
+
+O tema escuro usa grafite e conserva os acentos verdes. Comunicação por WhatsApp é editável e profissional; avisos por email passam pela fila centralizada.
+
+Google Calendar/Meet está preparado por professor, com tokens criptografados, disponibilidade e sincronização com retentativas. Falta configurar as credenciais OAuth e testar a conexão real. Veja [GOOGLE_CALENDAR_SETUP.md](GOOGLE_CALENDAR_SETUP.md).

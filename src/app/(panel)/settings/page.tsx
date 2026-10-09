@@ -1,3 +1,6 @@
+import {GoogleIntegration} from "@/components/google-integration";
+import {googleConfigured} from "@/lib/google/calendar";
+import {PlanFields} from "@/components/plan-fields";
 import {ActionForm,SubmitButton} from "@/components/action-form";
 import { getTranslator } from "@/lib/i18n/server";
 import { BrowserPreferences } from "@/components/browser-preferences";
@@ -10,17 +13,6 @@ import { createPlan, deletePlan, updatePlan, updateTeacher } from "../actions";
 import { ConfirmButton } from "@/components/confirm-button";
 import type { Plan, Teacher } from "@/lib/data";
 import { requireUser } from "@/lib/supabase/server";
-async function PlanFields({ plan }: {
-    plan?: Plan;
-}) {
-    const { t } = await getTranslator();
-    return (<>
-      <input className="input col-span-2 sm:col-span-1" name="name" aria-label={t("Nome do plano")} required placeholder={t("Nome (ex.: 1x por semana)")} defaultValue={plan?.name}/>
-      <input className="input" name="lessons" aria-label={t("Aulas no pacote")} type="number" min={1} required placeholder={t("Aulas no pacote")} defaultValue={plan?.lessons}/>
-      <input className="input" name="weekly_lessons" aria-label={t("Aulas por semana")} type="number" min={1} max={7} step={1} required placeholder={t("Aulas por semana")} defaultValue={plan?.weekly_lessons ?? 1}/>
-      <input className="input" name="price" aria-label={t("Pre\u00E7o do plano em reais")} type="number" min={0} required placeholder={t("Pre\u00E7o (R$)")} defaultValue={plan?.price}/>
-    </>);
-}
 export default function ConfigPage() {
     return <Suspense fallback={<PanelLoading />}><PageContent /></Suspense>;
 }
@@ -31,6 +23,7 @@ async function PageContent() {
         supabase.from("teachers").select("*").eq("id", userId).single<Teacher>(),
         supabase.from("plans").select("*").order("lessons"),
     ]);
+    const google=await supabase.from("google_calendar_connections").select("teacher_id,last_error").eq("teacher_id",userId).maybeSingle();
     const rules = await loadHolidayRules(supabase, [userId]);
     const settings = rules.settings[0] ?? null;
     const now = new Date();
@@ -46,26 +39,26 @@ async function PageContent() {
         <SubmitButton className="btn">{t("Salvar")}</SubmitButton>
       </ActionForm>
 
-      <BrowserPreferences />
+      <BrowserPreferences /><GoogleIntegration configured={googleConfigured()} connected={Boolean(google.data)} error={google.data?.last_error}/>
 
       <HolidaySettingsForm key={`${settings?.enabled}-${settings?.policy}-${locked}`} settings={settings} holidays={rules.holidays} today={nowInTZ(now).today} locked={locked} ready={rules.ready}/>
 
       <section className="card space-y-3">
         <h2 className="h2">{t("Planos")}</h2>
         <p className="text-xs text-muted">{t("Defina separadamente as aulas do pacote e as aulas por semana. Mudar o pre\u00E7o n\u00E3o altera pagamentos j\u00E1 registrados.")}</p>
-        <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto_auto] gap-2 text-xs text-muted max-sm:hidden">
-          <span>{t("Nome")}</span><span>{t("Aulas no pacote")}</span><span>{t("Aulas por semana")}</span><span>{t("Pre\u00E7o (R$)")}</span>
+        <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_auto_auto] gap-2 text-xs text-muted max-sm:hidden">
+
         </div>
-        {((plans ?? []) as Plan[]).map((p) => (<div key={p.id} className="flex gap-2">
-            <ActionForm action={updatePlan.bind(null, p.id)} className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+        {((plans ?? []) as Plan[]).map((p) => (<div key={p.id} className="flex gap-2 plan-row">
+            <ActionForm action={updatePlan.bind(null, p.id)} className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
               <PlanFields plan={p}/>
               <SubmitButton className="btn-ghost">{t("Salvar")}</SubmitButton>
             </ActionForm>
             <ActionForm action={deletePlan.bind(null, p.id)} className="flex items-start">
-              <ConfirmButton message={t("Excluir o plano? Alunos nele ficam sem plano.")} className="btn-ghost">{t("\u2715")}</ConfirmButton>
+              <ConfirmButton message={t("Excluir o plano? Alunos nele ficam sem plano.")} className="btn-ghost">{t("Excluir")}</ConfirmButton>
             </ActionForm>
           </div>))}
-        <ActionForm action={createPlan} className="grid grid-cols-2 gap-2 border-t border-line pt-3 sm:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+        <ActionForm action={createPlan} className="grid grid-cols-2 gap-2 border-t border-line pt-3 sm:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
           <PlanFields />
           <SubmitButton className="btn">{t("+ Adicionar")}</SubmitButton>
         </ActionForm>

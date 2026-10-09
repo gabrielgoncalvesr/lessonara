@@ -647,112 +647,112 @@ input[type="checkbox"] { accent-color: var(--accent); }
 --tone-background-f0f1f4:#f0f1f4;
 --tone-text-74827f:#74827f;
 --tone-background-f0f5ef:#f0f5ef;}
-html[data-theme="dark"]{color-scheme:dark;--bg:#111a16;--surface:#1b2621;--fg:#edf3ef;--muted:#a5b8ad;--line:#35483e;--accent:#80bea6;--accent-fg:#12271e;--ok:#7bc6a1;--warn:#e8b87e;--bad:#f1a2a2;--info:#a5bdeb;--extra:#ccb0e6;--tone-border-7daa98:hsl(156 15% 24%);
---tone-background-dbeae2:hsl(148 18% 11%);
---tone-border-8eafa1:hsl(155 12% 24%);
---tone-text-8a9692:hsl(160 4% 83%);
---tone-background-315e51:hsl(163 22% 19%);
+html[data-theme="dark"]{color-scheme:dark;--bg:#111210;--surface:#191a18;--fg:#eeefeb;--muted:#aaaDA6;--line:#343631;--accent:#80bea6;--accent-fg:#12271e;--ok:#7bc6a1;--warn:#e8b87e;--bad:#f1a2a2;--info:#a5bdeb;--extra:#ccb0e6;--tone-border-7daa98:hsl(156 0% 24%);
+--tone-background-dbeae2:hsl(148 0% 11%);
+--tone-border-8eafa1:hsl(155 0% 24%);
+--tone-text-8a9692:hsl(160 0% 83%);
+--tone-background-315e51:hsl(163 0% 19%);
 --tone-background-fff:hsl(0 0% 10%);
---tone-text-bb8a63:hsl(27 27% 83%);
---tone-text-88948f:hsl(155 4% 83%);
---tone-background-f5f8f5:hsl(120 12% 10%);
---tone-background-eaf2ed:hsl(143 16% 10%);
---tone-background-ede8dc:hsl(42 22% 11%);
---tone-text-897b62:hsl(38 12% 85%);
+--tone-text-bb8a63:hsl(27 0% 83%);
+--tone-text-88948f:hsl(155 0% 83%);
+--tone-background-f5f8f5:hsl(120 0% 10%);
+--tone-background-eaf2ed:hsl(143 0% 10%);
+--tone-background-ede8dc:hsl(42 0% 11%);
+--tone-text-897b62:hsl(38 0% 85%);
 --tone-background-ffffffb3:hsl(0 0% 10% / 0.70);
---tone-text-62746d:hsl(157 6% 85%);
---tone-background-edf4ef:hsl(137 17% 10%);
---tone-text-5c8a70:hsl(146 14% 85%);
---tone-background-f0edf7:hsl(258 27% 10%);
---tone-text-8a7aa9:hsl(260 15% 83%);
---tone-background-f6eade:hsl(30 40% 11%);
---tone-text-b3845b:hsl(28 26% 84%);
---tone-background-fbf6ef:hsl(35 42% 10%);
---tone-border-ede4d7:hsl(35 27% 25%);
---tone-background-f7f0e6:hsl(35 36% 10%);
---tone-background-f0f3f1:hsl(140 8% 10%);
---tone-background-f6f8f5:hsl(100 12% 10%);
---tone-text-98a49f:hsl(155 4% 81%);
---tone-background-fafbf9:hsl(90 14% 10%);
---tone-text-84918b:hsl(152 4% 84%);
---tone-border-f0f2ee:hsl(90 9% 24%);
---tone-background-fcfdfb:hsl(90 23% 10%);
---tone-background-e8eee2:hsl(90 18% 11%);
---tone-text-69815d:hsl(100 11% 85%);
---tone-background-f4e8df:hsl(26 34% 11%);
---tone-text-ac8065:hsl(23 21% 84%);
---tone-background-eae7f3:hsl(255 23% 10%);
---tone-text-8677a1:hsl(261 13% 84%);
---tone-background-e4eef4:hsl(203 29% 10%);
---tone-text-6c8b9c:hsl(201 14% 84%);
---tone-background-edf4ed:hsl(120 17% 10%);
---tone-text-507b57:hsl(130 15% 85%);
---tone-background-fcf0df:hsl(35 58% 10%);
---tone-text-a57a38:hsl(36 35% 85%);
---tone-text-99a69f:hsl(148 5% 81%);
---tone-text-87968f:hsl(152 5% 83%);
---tone-background-7d9a72:hsl(104 12% 16%);
---tone-background-f0f5ed:hsl(98 20% 10%);
---tone-text-789374:hsl(112 9% 85%);
---tone-border-c7dbb9:hsl(95 22% 25%);
---tone-background-f3f7f0:hsl(94 21% 10%);
---tone-text-75846d:hsl(99 7% 85%);
---tone-background-f5f7f5:hsl(120 8% 10%);
---tone-background-edf2e8:hsl(90 19% 10%);
---tone-text-71816c:hsl(106 6% 85%);
+--tone-text-62746d:hsl(157 0% 85%);
+--tone-background-edf4ef:hsl(137 0% 10%);
+--tone-text-5c8a70:hsl(146 0% 85%);
+--tone-background-f0edf7:hsl(258 0% 10%);
+--tone-text-8a7aa9:hsl(260 0% 83%);
+--tone-background-f6eade:hsl(30 0% 11%);
+--tone-text-b3845b:hsl(28 0% 84%);
+--tone-background-fbf6ef:hsl(35 0% 10%);
+--tone-border-ede4d7:hsl(35 0% 25%);
+--tone-background-f7f0e6:hsl(35 0% 10%);
+--tone-background-f0f3f1:hsl(140 0% 10%);
+--tone-background-f6f8f5:hsl(100 0% 10%);
+--tone-text-98a49f:hsl(155 0% 81%);
+--tone-background-fafbf9:hsl(90 0% 10%);
+--tone-text-84918b:hsl(152 0% 84%);
+--tone-border-f0f2ee:hsl(90 0% 24%);
+--tone-background-fcfdfb:hsl(90 0% 10%);
+--tone-background-e8eee2:hsl(90 0% 11%);
+--tone-text-69815d:hsl(100 0% 85%);
+--tone-background-f4e8df:hsl(26 0% 11%);
+--tone-text-ac8065:hsl(23 0% 84%);
+--tone-background-eae7f3:hsl(255 0% 10%);
+--tone-text-8677a1:hsl(261 0% 84%);
+--tone-background-e4eef4:hsl(203 0% 10%);
+--tone-text-6c8b9c:hsl(201 0% 84%);
+--tone-background-edf4ed:hsl(120 0% 10%);
+--tone-text-507b57:hsl(130 0% 85%);
+--tone-background-fcf0df:hsl(35 0% 10%);
+--tone-text-a57a38:hsl(36 0% 85%);
+--tone-text-99a69f:hsl(148 0% 81%);
+--tone-text-87968f:hsl(152 0% 83%);
+--tone-background-7d9a72:hsl(104 0% 16%);
+--tone-background-f0f5ed:hsl(98 0% 10%);
+--tone-text-789374:hsl(112 0% 85%);
+--tone-border-c7dbb9:hsl(95 0% 25%);
+--tone-background-f3f7f0:hsl(94 0% 10%);
+--tone-text-75846d:hsl(99 0% 85%);
+--tone-background-f5f7f5:hsl(120 0% 10%);
+--tone-background-edf2e8:hsl(90 0% 10%);
+--tone-text-71816c:hsl(106 0% 85%);
 --tone-background-ffffffc9:hsl(0 0% 10% / 0.79);
 --tone-border-fff:hsl(0 0% 23%);
---tone-border-a2b394:hsl(93 12% 24%);
---tone-text-7e8c76:hsl(98 6% 85%);
---tone-background-f4f8f2:hsl(100 21% 10%);
---tone-text-9ca89f:hsl(135 5% 81%);
---tone-background-f1f7ec:hsl(93 29% 10%);
---tone-background-e9f0e5:hsl(98 19% 11%);
---tone-background-e7edf7:hsl(218 35% 10%);
---tone-text-536b9c:hsl(220 21% 85%);
---tone-background-eee7f5:hsl(270 29% 10%);
---tone-text-80679c:hsl(268 15% 85%);
---tone-background-f8e6e3:hsl(9 42% 10%);
---tone-text-b44848:hsl(0 30% 85%);
---tone-background-edf0ee:hsl(140 6% 10%);
---tone-text-79847e:hsl(147 3% 85%);
---tone-background-eaf1e7:hsl(102 18% 10%);
---tone-background-edf3e8:hsl(93 22% 10%);
---tone-border-e1e9d9:hsl(90 19% 25%);
+--tone-border-a2b394:hsl(93 0% 24%);
+--tone-text-7e8c76:hsl(98 0% 85%);
+--tone-background-f4f8f2:hsl(100 0% 10%);
+--tone-text-9ca89f:hsl(135 0% 81%);
+--tone-background-f1f7ec:hsl(93 0% 10%);
+--tone-background-e9f0e5:hsl(98 0% 11%);
+--tone-background-e7edf7:hsl(218 0% 10%);
+--tone-text-536b9c:hsl(220 0% 85%);
+--tone-background-eee7f5:hsl(270 0% 10%);
+--tone-text-80679c:hsl(268 0% 85%);
+--tone-background-f8e6e3:hsl(9 0% 10%);
+--tone-text-b44848:hsl(0 0% 85%);
+--tone-background-edf0ee:hsl(140 0% 10%);
+--tone-text-79847e:hsl(147 0% 85%);
+--tone-background-eaf1e7:hsl(102 0% 10%);
+--tone-background-edf3e8:hsl(93 0% 10%);
+--tone-border-e1e9d9:hsl(90 0% 25%);
 --tone-background-ffffff96:hsl(0 0% 10% / 0.59);
---tone-border-d5dece:hsl(94 14% 24%);
---tone-background-edf0ea:hsl(90 12% 10%);
---tone-background-83a274:hsl(100 14% 15%);
---tone-border-ecdfcc:hsl(36 32% 26%);
---tone-background-fcf5e9:hsl(38 53% 10%);
---tone-text-9b753f:hsl(35 30% 85%);
---tone-background-fae9e7:hsl(6 46% 10%);
---tone-text-a75d5c:hsl(1 21% 85%);
---tone-background-fbefed:hsl(9 45% 10%);
---tone-border-f0ddda:hsl(8 30% 26%);
---tone-text-975653:hsl(3 20% 85%);
---tone-background-f8e7e4:hsl(9 41% 10%);
---tone-text-929b96:hsl(147 3% 82%);
---tone-text-a1aaa5:hsl(147 4% 81%);
---tone-text-808a84:hsl(144 3% 84%);
---tone-background-edf0ed:hsl(120 6% 10%);
---tone-text-38674e:hsl(148 21% 85%);
---tone-background-e4f1e2:hsl(112 24% 11%);
---tone-border-79a36e:hsl(108 16% 24%);
---tone-background-f6faf3:hsl(94 29% 10%);
---tone-background-192a2559:hsl(162 18% 21% / 0.35);
---tone-background-f1f6ec:hsl(90 25% 10%);
---tone-text-86938c:hsl(148 4% 83%);
---tone-text-e9eee8:hsl(110 11% 72%);
---tone-text-bfd3b6:hsl(101 17% 77%);
---tone-text-47785a:hsl(143 18% 85%);
---tone-text-315e51:hsl(163 22% 85%);
---tone-text-edf4e8:hsl(95 25% 72%);
---tone-background-f7f9f5:hsl(90 17% 10%);
---tone-background-f3f7ef:hsl(90 23% 10%);
---tone-background-f0f1f4:hsl(225 11% 10%);
---tone-text-74827f:hsl(167 4% 85%);
---tone-background-f0f5ef:hsl(110 16% 10%);}
+--tone-border-d5dece:hsl(94 0% 24%);
+--tone-background-edf0ea:hsl(90 0% 10%);
+--tone-background-83a274:hsl(100 0% 15%);
+--tone-border-ecdfcc:hsl(36 0% 26%);
+--tone-background-fcf5e9:hsl(38 0% 10%);
+--tone-text-9b753f:hsl(35 0% 85%);
+--tone-background-fae9e7:hsl(6 0% 10%);
+--tone-text-a75d5c:hsl(1 0% 85%);
+--tone-background-fbefed:hsl(9 0% 10%);
+--tone-border-f0ddda:hsl(8 0% 26%);
+--tone-text-975653:hsl(3 0% 85%);
+--tone-background-f8e7e4:hsl(9 0% 10%);
+--tone-text-929b96:hsl(147 0% 82%);
+--tone-text-a1aaa5:hsl(147 0% 81%);
+--tone-text-808a84:hsl(144 0% 84%);
+--tone-background-edf0ed:hsl(120 0% 10%);
+--tone-text-38674e:hsl(148 0% 85%);
+--tone-background-e4f1e2:hsl(112 0% 11%);
+--tone-border-79a36e:hsl(108 0% 24%);
+--tone-background-f6faf3:hsl(94 0% 10%);
+--tone-background-192a2559:hsl(162 0% 21% / 0.35);
+--tone-background-f1f6ec:hsl(90 0% 10%);
+--tone-text-86938c:hsl(148 0% 83%);
+--tone-text-e9eee8:hsl(110 0% 72%);
+--tone-text-bfd3b6:hsl(101 0% 77%);
+--tone-text-47785a:hsl(143 0% 85%);
+--tone-text-315e51:hsl(163 0% 85%);
+--tone-text-edf4e8:hsl(95 0% 72%);
+--tone-background-f7f9f5:hsl(90 0% 10%);
+--tone-background-f3f7ef:hsl(90 0% 10%);
+--tone-background-f0f1f4:hsl(225 0% 10%);
+--tone-text-74827f:hsl(167 0% 85%);
+--tone-background-f0f5ef:hsl(110 0% 10%);}
 html[data-theme="dark"] .btn:hover{background:#a0d9c2;}
 html[data-theme="dark"] .input:focus{border-color:#8bc9ad;box-shadow:0 0 0 3px #80bea625;}
 html[data-theme="dark"] .input::placeholder{color:#8da197;}
@@ -800,3 +800,20 @@ button:disabled{cursor:wait;}
 .activity-review-hint{margin-top:10px}
 .activity-completed[open] .activity-review-hint{display:none}
 @media(max-width:640px){.portal-header{flex-wrap:wrap;gap:15px}.student-material-list li{flex-wrap:wrap}.student-material-list .file-download{width:100%}.portal-preferences{margin-left:auto}}
+
+.workspace{display:flex;flex-direction:column;min-height:100dvh}
+.workspace-header{flex-shrink:0;height:56px}
+.workspace-content{flex:1;width:100%;margin:0 auto;min-height:0}
+.workspace-footer{margin-top:auto;flex-shrink:0}
+.btn-xs,.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 13px;font-size:12px;border-radius:10px}
+.btn-warning{color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,var(--surface));border-color:color-mix(in srgb,var(--warn) 30%,var(--line))}
+.btn-danger{color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--surface));border-color:color-mix(in srgb,var(--bad) 25%,var(--line))}
+.payment-actions{align-items:stretch}.payment-actions>button,.payment-email button{width:100%;height:40px}
+.payment-email{margin:0}.whatsapp-message-editor{min-height:135px;line-height:1.6}
+.finance-bar:focus{outline:none}.finance-bar:focus-visible rect{stroke:var(--accent);stroke-width:2px;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--accent) 50%,transparent))}
+
+.pagination{display:flex;gap:10px;justify-content:flex-end;align-items:center;padding:18px 0;font-size:12px;color:var(--muted)}.pagination>span{margin-right:auto}
+
+.plan-row{padding:16px 0;border-top:1px solid var(--line)}.plan-generated-name{grid-column:1/-1;font-size:12px;color:var(--muted)}.mini-agenda-slots{display:grid;gap:7px;max-height:260px;overflow:auto;margin-top:12px}.mini-agenda-slot{display:flex;align-items:center;gap:14px;padding:12px;border:1px solid var(--line);border-radius:10px;text-align:left;font-size:12px}.mini-agenda-slot>span:nth-child(2){flex:1}.mini-agenda-free{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));color:var(--ok)}.mini-agenda-busy{border-color:color-mix(in srgb,var(--bad) 40%,var(--line));color:var(--bad);background:color-mix(in srgb,var(--bad) 5%,var(--surface));opacity:.85}
+
+html[data-theme="dark"] .balance-warning{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--surface))}html[data-theme="dark"] .stat-renew{background:color-mix(in srgb,var(--bad) 7%,var(--surface));border-color:color-mix(in srgb,var(--bad) 25%,var(--line))}.file-download{min-height:44px;font-size:13px;padding:11px 15px}

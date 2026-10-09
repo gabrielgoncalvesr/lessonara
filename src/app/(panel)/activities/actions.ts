@@ -16,13 +16,13 @@ export async function assignActivity(input:{studentId:string;documentId:string;t
  if(input.documentId){const document=await supabase.from("documents").select("id").eq("id",input.documentId).eq("teacher_id",userId).eq("status","ready").maybeSingle();if(document.error||!document.data)return fail("Documento não encontrado na sua biblioteca.");}
  const {error}=await supabase.from("activities").insert({teacher_id:userId,student_id:input.studentId,document_id:input.documentId||null,title:input.title.trim(),instructions:input.instructions.trim(),due_on:dueOn});if(error)return fail("Não foi possível enviar a atividade.");refresh(input.studentId,student.data.slug);return {ok:true,data:undefined};
 }
-export async function reviewActivity(id:string,feedback:string):Promise<Result>{
+export async function reviewActivity(id:string,feedback:string,documentId=""):Promise<Result>{
  const {supabase,userId}=await requireUser();if(feedback.length>4000)return fail("Use um comentário de até 4.000 caracteres.");
  const activity=await supabase.from("activities").select("student_id,students(slug),activity_submissions(submitted_at)").eq("id",id).eq("teacher_id",userId).maybeSingle<{student_id:string;students:{slug:string};activity_submissions:{submitted_at:string|null}|{submitted_at:string|null}[]|null}>();
  if(activity.error||!activity.data)return fail("Atividade não encontrada.");
  const deliveries=activity.data.activity_submissions;const delivery=Array.isArray(deliveries)?deliveries[0]:deliveries;
  if(!delivery?.submitted_at)return fail("A atividade ainda não foi entregue.");
- const {error}=await supabase.from("activities").update({feedback:feedback.trim(),reviewed_at:new Date().toISOString()}).eq("id",id).eq("teacher_id",userId);if(error)return fail("Não foi possível registrar a conferência.");refresh(activity.data.student_id,activity.data.students.slug);return {ok:true,data:undefined};
+ const {error}=await supabase.rpc("review_activity",{p_id:id,p_feedback:feedback.trim(),p_document:documentId||null});if(error)return fail("Não foi possível registrar a conferência.");refresh(activity.data.student_id,activity.data.students.slug);return {ok:true,data:undefined};
 }
 export async function archiveActivity(id:string,archive:boolean):Promise<Result>{
  const {supabase,userId}=await requireUser();const {data,error}=await supabase.from("activities").update({archived_at:archive?new Date().toISOString():null}).eq("id",id).eq("teacher_id",userId).select("student_id,students(slug)").maybeSingle<{student_id:string;students:{slug:string}}>();if(error||!data)return fail("Não foi possível atualizar a atividade.");refresh(data.student_id,data.students.slug);return {ok:true,data:undefined};

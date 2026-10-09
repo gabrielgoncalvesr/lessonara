@@ -1,5 +1,6 @@
 "use client";
 
+import {Icon} from "./icon";
 import {useFormStatus} from "react-dom";
 import {BusyContent} from "./busy-content";
 import {useI18n} from "./browser-preferences-provider";
@@ -17,8 +18,8 @@ export function ConfirmButton({
   const {pending}=useFormStatus();
   const {t}=useI18n();
   return (
-    <button className={className} disabled={pending} aria-busy={pending} onClick={(e) => !confirm(t(message)) && e.preventDefault()}>
-      <BusyContent pending={pending} label={t("Processando…")}>{children}</BusyContent>
+    <button className={`${className} btn-danger`} disabled={pending} aria-busy={pending} onClick={(e) => !confirm(t(message)) && e.preventDefault()}>
+      <BusyContent pending={pending} label={t("Processando…")}><Icon name="trash" className="h-4 w-4"/>{children}</BusyContent>
     </button>
   );
 }

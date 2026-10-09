@@ -31,3 +31,5 @@ it("monta a mensagem exata e abre conversa pelo telefone com DDD", () => {
 });
 
 it("frequência do aluno prevalece sobre plano, sem inferência de pagamento",()=>{expect(weeklyScheduleLimit(3,2)).toBe(3);expect(weeklyScheduleLimit(null,2)).toBe(2);expect(weeklyScheduleLimit(8,2)).toBe(0);expect(weeklyScheduleLimit()).toBe(0);});
+
+it("permite mensagem personalizada sem Pix hardcoded",()=>{expect(DEFAULT_WHATSAPP_MESSAGE).not.toContain("CPF");expect(DEFAULT_WHATSAPP_MESSAGE).not.toContain("amore");expect(new URL(paymentWhatsAppUrl("+5511999999999","BR","Olá, vamos renovar?")!).searchParams.get("text")).toBe("Olá, vamos renovar?");});

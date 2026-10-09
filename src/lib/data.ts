@@ -25,6 +25,7 @@ export type Teacher = {
 };
 
 export type Plan = {
+  frequency_period?:"week"|"month";frequency_count?:number;scheduling_mode?:"recurring"|"flexible";
   weekly_lessons?: number;
   id: string;
   name: string;
@@ -43,7 +44,7 @@ const trimTime = (t: string | null) => (t ? t.slice(0, 5) : t);
 /** Carrega agenda, pacotes e exceções de vários alunos e calcula o saldo de cada um. */
 export type StudentLedger = {
   ledger: Ledger;
-  schedules: ScheduleRow[];
+  schedules: ScheduleRow[];appointments?:{id:string;date:string;time:string;meet_url?:string|null}[];
   packages: Package[];
   today: string;
 };
@@ -51,26 +52,28 @@ export type StudentLedger = {
 export async function loadLedgers(supabase: SupabaseClient, studentIds: string[]): Promise<Map<string, StudentLedger>> {
   const result = new Map<string, StudentLedger>();
   if (studentIds.length === 0) return result;
-  const [students, schedules, packages, events] = await Promise.all([
-    supabase.from("students").select("id, teacher_id").in("id", studentIds),
-    supabase.from("schedules").select("id, student_id, weekday, time, starts_on, ends_on").in("student_id", studentIds),
-    supabase.from("packages").select("id, student_id, paid_on, lessons, amount, created_at").in("student_id", studentIds),
-    supabase.from("lesson_events").select("id, student_id, date, time, kind, note").in("student_id", studentIds),
+  async function rows<T>(table:string,columns:string,key="student_id"):Promise<{data:T[];error:null}>{const collected:T[]=[];for(let offset=0;offset<studentIds.length;offset+=200){const batch=studentIds.slice(offset,offset+200);for(let page=0;;page+=1000){const result=await supabase.from(table).select(columns).in(key,batch).order("id").range(page,page+999).returns<T[]>();if(result.error)throw result.error;collected.push(...(result.data??[]));if((result.data?.length??0)<1000)break;}}return {data:collected,error:null};}
+  const [students,schedules,packages,events,appointments]=await Promise.all([
+   rows<{id:string;teacher_id:string}>("students","id,teacher_id","id"),
+   rows<ScheduleRow&{student_id:string}>("schedules","id,student_id,weekday,monthly_day,time,starts_on,ends_on,meet_url"),
+   rows<Package&{student_id:string}>("packages","id,student_id,paid_on,lessons,amount,created_at"),
+   rows<LessonEvent&{student_id:string}>("lesson_events","id,student_id,date,time,kind,note,source_event_id,meet_url"),
+   rows<{id:string;student_id:string;date:string;time:string;meet_url:string|null}>("appointments","id,student_id,date,time,meet_url")
   ]);
-  for (const r of [schedules, packages, events, students]) if (r.error) throw r.error;
 
   const rules = await loadHolidayRules(supabase, [...new Set((students.data ?? []).map(student => student.teacher_id))]);
   const { today, time } = nowInTZ();
-  const byStudent = <T extends { student_id: string }>(rows: T[], id: string) => rows.filter((r) => r.student_id === id);
+  const group=<T extends {student_id:string}>(rows:T[])=>{const map=new Map<string,T[]>();for(const row of rows){const existing=map.get(row.student_id);if(existing)existing.push(row);else map.set(row.student_id,[row]);}return map;};
+  const scheduleGroups=group(schedules.data??[]),packageGroups=group(packages.data??[]),eventGroups=group(events.data??[]),appointmentGroups=group(appointments.data??[]);const teacherByStudent=new Map((students.data??[]).map(student=>[student.id,student.teacher_id]));
 
   for (const id of studentIds) {
-    const s = byStudent(schedules.data!, id).map((r) => ({ ...r, time: trimTime(r.time)! })) as ScheduleRow[];
-    const p = byStudent(packages.data!, id) as Package[];
-    const e = byStudent(events.data!, id).map((r) => ({ ...r, time: trimTime(r.time) })) as LessonEvent[];
-    const teacherId = students.data?.find(student => student.id === id)?.teacher_id;
+    const s = (scheduleGroups.get(id)??[]).map((r) => ({ ...r, time: trimTime(r.time)! })) as ScheduleRow[];
+    const p = (packageGroups.get(id)??[]) as Package[];
+    const e = (eventGroups.get(id)??[]).map((r) => ({ ...r, time: trimTime(r.time) })) as LessonEvent[];
+    const teacherId = teacherByStudent.get(id);
     const settings = rules.settings.find(rule => rule.teacher_id === teacherId);
     const holidays = settings?.enabled ? rules.holidays.filter(holiday => holiday.teacher_id === teacherId && holiday.date >= settings.effective_from!) : [];
-    result.set(id, { ledger: computeLedger({ schedules: s, events: e, packages: p, holidays, holidayPolicy: settings?.policy, today, time }), schedules: s, packages: p, today });
+    result.set(id, { ledger: computeLedger({ schedules: s, events: e, appointments:(appointmentGroups.get(id)??[]).map(a=>({...a,time:trimTime(a.time)!})),packages: p, holidays, holidayPolicy: settings?.policy, today, time }), schedules: s,appointments:(appointmentGroups.get(id)??[]).map(a=>({...a,time:trimTime(a.time)!})), packages: p, today });
   }
   return result;
 }

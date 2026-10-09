@@ -1,7 +1,14 @@
 import type { SVGProps } from "react";
 
-export type IconName = "chart" | "grid" | "users" | "calendar" | "settings" | "arrow" | "plus" | "search" | "book" | "logout" | "clock" | "check" | "download" | "language" | "sun" | "moon";
+export type IconName = "chart" | "grid" | "users" | "calendar" | "settings" | "arrow" | "plus" | "search" | "book" | "logout" | "clock" | "check" | "download" | "language" | "sun" | "moon" | "archive" | "trash" | "mail" | "chat" | "copy" | "save" | "video";
 const paths: Record<IconName, string> = {
+  video:"M3 5h12v14H3z M15 9l6-4v14l-6-4",
+  archive:"M3 3h18v5H3z M5 8v13h14V8 M9 12h6",
+  trash:"M3 6h18 M8 6V3h8v3 M5 6l1 15h12l1-15 M10 10v7 M14 10v7",
+  mail:"M3 4h18v16H3z M3 5l9 7 9-7",
+  chat:"M3 3h18v14H9l-6 4z",
+  copy:"M8 8h13v13H8z M16 8V3H3v13h5",
+  save:"M3 3h15l3 3v15H3z M7 3v6h10V3 M7 21v-8h10v8",
   download:"M12 3v12 M7 10l5 5 5-5 M4 16v5h16v-5",
   language:"M3 5h12 M9 3v2 M5 5c0 5 4 9 9 11 M13 5c0 5-4 9-9 11 M14 21l4-10 4 10 M16 17h4",
   sun:"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l1 1 M18 18l1 1 M5 19l1-1 M18 6l1-1",

@@ -1,4 +1,5 @@
 "use client";
+import {Icon} from "./icon";
 import {useI18n} from "@/components/browser-preferences-provider";
 import type { ReactNode } from "react";
 import { formatDateLong } from "@/lib/dates";
@@ -33,7 +34,7 @@ export function LessonList({ lessons, actions, }: {
             {uncovered && <span className="rounded bg-bad/10 px-1.5 py-0.5 text-xs text-bad">{t("sem pacote")}</span>}
             {l.holidayName && <span className="text-xs text-muted">{t("\u00B7 ")}{l.holidayName}</span>}
             {l.event?.note && <span className="text-xs text-muted">{t("\u00B7 ")}{l.event.note}</span>}
-            {actions && <span className="ml-auto flex gap-1">{actions[`${l.date}-${l.time}-${l.status}`]}</span>}
+            {l.meetUrl&&<a className="btn-xs" href={l.meetUrl} target="_blank" rel="noreferrer"><Icon name="video" className="h-4 w-4"/>{t("Meet")}</a>}{actions && <span className="ml-auto flex gap-1">{actions[`${l.date}-${l.time}-${l.status}`]}</span>}
           </li>);
         })}
     </ul>);

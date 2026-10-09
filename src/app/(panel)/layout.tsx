@@ -14,7 +14,7 @@ export default async function PainelLayout({ children }: LayoutProps<"/">) {
         <Link href="/" className="brand"><LogoMark className="h-9 w-9 text-accent"/><span>{t("lessonara")}<span className="brand-dot">{t(".")}</span></span></Link>
         <p className="sidebar-label">{t("SEU ESPA\u00C7O DE ENSINO")}</p>
         <Suspense fallback={<PanelNavFallback />}><PanelNav /></Suspense>
-        <div className="sidebar-bottom"><div className="teacher-avatar"><Icon name="book"/></div><div className="flex-1"><p className="text-sm font-semibold">{t("\u00C1rea da professora")}</p><p className="mt-0.5 text-xs text-muted">{t("Seu dia, mais leve")}</p></div><ActionForm action={signOut}><SubmitButton className="signout" aria-label={t("Sair da conta")} title={t("Sair da conta")}><Icon name="logout" className="h-4 w-4"/></SubmitButton></ActionForm></div>
+        <div className="sidebar-bottom"><div className="teacher-avatar"><Icon name="book"/></div><div className="flex-1"><p className="text-sm font-semibold">{t("\u00C1rea do professor(a)")}</p><p className="mt-0.5 text-xs text-muted">{t("Seu dia, mais leve")}</p></div><ActionForm action={signOut}><SubmitButton icon={null} className="signout" aria-label={t("Sair da conta")} title={t("Sair da conta")}><Icon name="logout" className="h-4 w-4"/></SubmitButton></ActionForm></div>
       </aside>
       <div className="workspace">
         <header className="workspace-header"><span><span className="text-muted">{t("Meu espa\u00E7o")}</span><span className="mx-3 text-line">{t("/")}</span><span className="font-medium">{t("Gest\u00E3o de aulas")}</span></span></header>
