@@ -7,7 +7,8 @@ import {notify} from "./toast";
 import {Icon,type IconName} from "./icon";
 import {BusyContent} from "./busy-content";
 const GroupContext=createContext<{active:string|null;setActive:(id:string|null)=>void}|null>(null);
-export function ActionGroup({children,className}:{children:ReactNode;className?:string}){const [active,setActive]=useState<string|null>(null);return <GroupContext value={{active,setActive}}><div className={className}>{children}</div></GroupContext>;}
+export function useActionGroup(){return useContext(GroupContext);}
+export function ActionGroup({children,className}:{children:ReactNode;className?:string}){const [active,setActive]=useState<string|null>(null);return <GroupContext value={{active,setActive}}><div className={className} data-action-busy={Boolean(active)}>{children}</div></GroupContext>;}
 function FormContents({children,blocked}:{children:ReactNode;blocked:boolean}){const {pending}=useFormStatus();return <fieldset className="action-fields" disabled={blocked||pending}>{children}</fieldset>;}
 export function ActionForm({action,children,className,id}:{action:(data:FormData)=>void|Promise<void>;children:ReactNode;className?:string;id?:string}){
  const group=useContext(GroupContext);const formId=useId();const running=useRef(false);const [error,setError]=useState("");const {t}=useI18n();

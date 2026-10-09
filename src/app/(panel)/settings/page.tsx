@@ -46,13 +46,13 @@ async function PageContent() {
         <div><label className="label" htmlFor="lesson-minutes">{t("Duração da aula (minutos)")}</label><select id="lesson-minutes" className="input" name="lesson_minutes" required defaultValue={teacher?.lesson_minutes??60}>{Array.from({length:12},(_,i)=>(i+1)*15).map(minutes=><option key={minutes} value={minutes}>{minutes} min</option>)}</select><p className="mt-2 text-xs text-muted">{t("Aplica-se a novos agendamentos. Aulas existentes mantêm sua duração.")}</p></div><SubmitButton className="btn">{t("Salvar")}</SubmitButton>
       </ActionForm>
 
-      <BrowserPreferences /></>} integrations={<GoogleIntegration configured={googleConfigured()} connected={Boolean(google.data)} error={google.data?.last_error}/>} holidays={<HolidaySettingsForm key={`${settings?.enabled}-${settings?.policy}-${locked}`} settings={settings} holidays={rules.holidays} today={nowInTZ(now).today} locked={locked} ready={rules.ready}/>} plans={<section className="card space-y-3">
+      <BrowserPreferences /></>} integrations={<GoogleIntegration configured={googleConfigured()} connected={Boolean(google.data)} error={google.data?.last_error}/>} holidays={<HolidaySettingsForm key={`${settings?.enabled}-${settings?.policy}-${locked}`} settings={settings} holidays={rules.holidays} today={nowInTZ(now).today} locked={locked} ready={rules.ready}/>} plans={<ActionGroup className="card space-y-3">
         <h2 className="h2">{t("Planos")}</h2>
         <p className="text-xs text-muted">{t("Defina separadamente os créditos do pacote e a frequência semanal ou mensal. Mudar o pre\u00E7o n\u00E3o altera pagamentos j\u00E1 registrados.")}</p>
         <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_auto_auto] gap-2 text-xs text-muted max-sm:hidden">
 
         </div>
-        {((plans ?? []) as Plan[]).map((p) => (<ActionGroup key={p.id} className="flex items-end gap-3 plan-row">
+        {((plans ?? []) as Plan[]).map((p) => (<div key={p.id} className="flex items-end gap-3 plan-row">
             <ActionForm action={updatePlan.bind(null, p.id)} className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
               {!p.is_active&&<p className="plan-suggestion-label">{t("Sugestão · confirme para ativar este plano")}</p>}<PlanFields plan={p}/>
               <SubmitButton className={p.is_active?"btn-ghost plan-save":"btn plan-save"}>{t(p.is_active?"Salvar":"Ativar plano")}</SubmitButton>
@@ -60,11 +60,11 @@ async function PageContent() {
             <ActionForm action={deletePlan.bind(null, p.id)} className="flex items-end plan-delete">
               <ConfirmButton message={t("Excluir o plano? Alunos nele ficam sem plano.")} className="btn-ghost">{t("Excluir")}</ConfirmButton>
             </ActionForm>
-          </ActionGroup>))}
+          </div>))}
         <NewPlanPanel key={(plans??[]).length}><ActionForm action={createPlan} className="grid grid-cols-2 gap-2 border-t border-line pt-3 sm:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
           <PlanFields />
           <SubmitButton className="btn" icon="plus">{t("Criar plano")}</SubmitButton>
         </ActionForm></NewPlanPanel>
-      </section>}/>
+      </ActionGroup>}/>
     </main>);
 }
