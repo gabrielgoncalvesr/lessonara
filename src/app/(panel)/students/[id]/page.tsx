@@ -42,6 +42,7 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
     const plans = (plansData ?? []) as Plan[];
     const plan = plans.find((p) => p.id === student.plan_id);
     const { ledger, schedules, packages, today,appointments } = (await loadLedgers(supabase, [id])).get(id)!;
+    const teacherDuration=await supabase.from("teachers").select("lesson_minutes").eq("id",userId).single();
     const scheduleLimit = weeklyScheduleLimit(null, plan?.weekly_lessons);
     const lessons = visibleLessons(ledger, today);
     const upcoming = lessons.filter((l) => !l.past);
@@ -60,9 +61,8 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
       <div className="detail-heading flex flex-wrap items-center gap-3">
         <Link href="/students" className="text-sm text-muted hover:text-fg">{t("\u2190 Alunos")}</Link>
         <h1 className="w-full text-xl font-semibold">{student.name}</h1>
-        <code className="truncate rounded bg-surface px-2 py-1 text-xs text-muted">{link}</code>
         <CopyButton text={link}/><ActionForm action={resendWelcome}><input type="hidden" name="studentId" value={student.id}/><SubmitButton className="btn-xs" icon="mail">{t("Reenviar convite")}</SubmitButton></ActionForm>
-        <Link href={link} target="_blank" className="btn-xs">{t("abrir")}</Link>
+
       </div>
 
       <ReplacementPrompt studentId={id} today={today}/><Balance ledger={ledger}/>
@@ -134,7 +134,7 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
                   </span>
                 </li>))}
             </ul>
-            <ScheduleForm key={`${plan?.id}-${plan?.frequency_period}-${plan?.scheduling_mode}-${plan?.frequency_count}`} studentId={id} schedules={schedules} limit={scheduleLimit} frequency={planFrequency(plan)} appointments={(appointments??[]).filter(a=>!ledger.lessons.some(l=>l.date===a.date&&l.time===a.time&&l.status==="desmarcada"))} today={today}/>
+            <ScheduleForm key={`${plan?.id}-${plan?.frequency_period}-${plan?.scheduling_mode}-${plan?.frequency_count}`} duration={teacherDuration.data?.lesson_minutes??60} studentId={id} schedules={schedules} limit={scheduleLimit} frequency={planFrequency(plan)} appointments={(appointments??[]).filter(a=>!ledger.lessons.some(l=>l.date===a.date&&l.time===a.time&&l.status==="desmarcada"))} today={today}/>
           </section>} dados={<section className="card space-y-3">
             <h2 className="h2">{t("Dados do aluno")}</h2>
             <ActionForm action={updateStudent.bind(null, id)} className="space-y-3">

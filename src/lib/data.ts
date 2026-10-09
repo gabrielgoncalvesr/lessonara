@@ -19,6 +19,7 @@ export type Student = {
 };
 
 export type Teacher = {
+  lesson_minutes?:number;
   id: string;
   name: string;
   email: string;
@@ -55,10 +56,10 @@ export async function loadLedgers(supabase: SupabaseClient, studentIds: string[]
   async function rows<T>(table:string,columns:string,key="student_id"):Promise<{data:T[];error:null}>{const collected:T[]=[];for(let offset=0;offset<studentIds.length;offset+=200){const batch=studentIds.slice(offset,offset+200);for(let page=0;;page+=1000){const result=await supabase.from(table).select(columns).in(key,batch).order("id").range(page,page+999).returns<T[]>();if(result.error)throw result.error;collected.push(...(result.data??[]));if((result.data?.length??0)<1000)break;}}return {data:collected,error:null};}
   const [students,schedules,packages,events,appointments]=await Promise.all([
    rows<{id:string;teacher_id:string}>("students","id,teacher_id","id"),
-   rows<ScheduleRow&{student_id:string}>("schedules","id,student_id,weekday,monthly_day,time,starts_on,ends_on,meet_url"),
+   rows<ScheduleRow&{student_id:string}>("schedules","id,student_id,weekday,monthly_day,time,starts_on,ends_on,meet_url,duration_minutes"),
    rows<Package&{student_id:string}>("packages","id,student_id,paid_on,lessons,amount,created_at"),
-   rows<LessonEvent&{student_id:string}>("lesson_events","id,student_id,date,time,kind,note,source_event_id,meet_url"),
-   rows<{id:string;student_id:string;date:string;time:string;meet_url:string|null}>("appointments","id,student_id,date,time,meet_url")
+   rows<LessonEvent&{student_id:string}>("lesson_events","id,student_id,date,time,kind,note,source_event_id,meet_url,duration_minutes"),
+   rows<{id:string;student_id:string;date:string;time:string;meet_url:string|null}>("appointments","id,student_id,date,time,meet_url,duration_minutes")
   ]);
 
   const rules = await loadHolidayRules(supabase, [...new Set((students.data ?? []).map(student => student.teacher_id))]);

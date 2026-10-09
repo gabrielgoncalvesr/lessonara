@@ -158,3 +158,12 @@ O convite de boas-vindas é de uso único e vale 24 horas. A ativação explíci
 O tema escuro usa grafite e conserva os acentos verdes. Comunicação por WhatsApp é editável e profissional; avisos por email passam pela fila centralizada.
 
 Google Calendar/Meet está preparado por professor, com tokens criptografados, disponibilidade e sincronização com retentativas. Falta configurar as credenciais OAuth e testar a conexão real. Veja [GOOGLE_CALENDAR_SETUP.md](GOOGLE_CALENDAR_SETUP.md).
+
+
+## Agendamento e revisão de interface
+
+A migration 0014 adiciona a duração configurável (15–180 minutos) do professor e uma cópia dessa duração em cada agendamento. A configuração afeta aulas novas; conflitos locais, disponibilidade Google e eventos Meet respeitam a duração. O seletor permite escolher horários livres, destaca a escolha e recarrega após salvar. Erros esperados de agendamento são retornados explicitamente, sem mensagem minificada do React.
+
+Configurações é dividida em Geral, Integrações, Feriados e Planos. Valores usam máscara de centavos durante a digitação e limite de R$ 99.000,00 no frontend e backend. Frequência e créditos continuam separados, com sugestões de quantidade e duração aproximada do pacote. As escolhas de idioma/aparência estão disponíveis após o login.
+
+Correções usam uma única origem de arquivo por vez: biblioteca pesquisável ou novo upload. O formulário é renovado após salvar. Resultados de ações aparecem em notificações temporárias; avisos persistentes e instruções permanecem no contexto. A sincronização Google mostra uma confirmação antes de importar/processar pendências e fica desabilitada quando não há itens.

@@ -42,3 +42,5 @@ it("mantém o pacote identificado por UUID e aloca reposição sem cobrar a desm
   expect(ledger.lessons[2].packageId).toBe("second");
   expect(ledger.remaining).toBe(0);
 });
+
+it("usa a duração guardada na aula para determinar o término",()=>{expect(lessonTiming({date:"2026-10-09",time:"14:00",status:"agendada",durationMinutes:45},"2026-10-09","14:44")).toBe("ongoing");expect(lessonTiming({date:"2026-10-09",time:"14:00",status:"agendada",durationMinutes:45},"2026-10-09","14:45")).toBe("completed");});

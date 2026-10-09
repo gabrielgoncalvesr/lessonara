@@ -1,6 +1,6 @@
 # Conectar Google Calendar e Meet ao Lessonara
 
-A integração foi preparada no backend, por professor. Ela usa a agenda principal, aulas de uma hora e o fuso de São Paulo. Tokens são criptografados no banco e nunca enviados ao navegador.
+A integração foi preparada no backend, por professor. Ela usa a agenda principal, duração definida em cada agendamento e o fuso de São Paulo. Tokens são criptografados no banco e nunca enviados ao navegador.
 
 1. No Google Cloud Console, crie ou selecione um projeto e habilite a **Google Calendar API**.
 2. Em Google Auth Platform, configure a marca do aplicativo e o público. Durante os testes, adicione seu email à lista de usuários de teste.
@@ -10,7 +10,7 @@ A integração foi preparada no backend, por professor. Ela usa a agenda princip
    - Desenvolvimento, se for testar localmente: `http://localhost:3001/integrations/google/callback`
 5. Guarde `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` como variáveis do servidor na Vercel e no `.env.local`. Não use prefixo `NEXT_PUBLIC_` e não envie o segredo pelo chat. `APP_URL` deve apontar para o ambiente correto.
 6. Depois de publicar essas variáveis, entre no Lessonara como professor e abra **Configurações → Integrações → Conectar Google**. Escolha a conta e confirme as permissões no Google.
-7. Use **Sincronizar aulas** para importar os agendamentos existentes. O processamento é feito em lotes; repetir o botão processa as pendências sem duplicar eventos já sincronizados. Novos agendamentos são enviados após a resposta do app.
+7. Use **Importar aulas existentes** / **Processar pendências** para importar os agendamentos existentes. O processamento é feito em lotes; repetir o botão processa as pendências sem duplicar eventos já sincronizados. Novos agendamentos são enviados após a resposta do app.
 8. Confirme a criação de um evento com Meet e teste um horário ocupado. A mini agenda mostra nomes das aulas do Lessonara; compromissos pessoais do Google aparecem apenas como ocupado.
 
 ## Comportamento e operação
@@ -25,3 +25,5 @@ A integração foi preparada no backend, por professor. Ela usa a agenda princip
 - Em produção, conclua os requisitos de publicação/verificação do OAuth no Google antes de abrir a integração a todos os professores. O Google pode limitar autorizações e validade de tokens no modo de teste.
 
 Documentação oficial: [OAuth para aplicações web](https://developers.google.com/identity/protocols/oauth2/web-server), [criação de eventos e conferências](https://developers.google.com/workspace/calendar/api/v3/reference/events/insert), [consulta de disponibilidade](https://developers.google.com/workspace/calendar/api/v3/reference/freebusy/query).
+
+A importação exige confirmação: cria eventos reais e pode enviar convites aos alunos. Eventos recorrentes compartilham um link Meet; aulas avulsas e reposições têm eventos separados. O botão não aparece habilitado quando a fila e a importação não têm pendências.

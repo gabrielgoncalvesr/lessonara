@@ -76,13 +76,15 @@ export async function regenerateLink(id: string) {
   revalidatePath("/", "layout");
 }
 
-export async function addSchedule(studentId:string,f:FormData){
+async function saveSchedule(studentId:string,f:FormData){
  const {supabase,userId}=await requireUser();const student=check(await supabase.from("students").select("id,plan_id").eq("id",studentId).eq("teacher_id",userId).maybeSingle()).data;if(!student?.plan_id)throw new Error("Escolha o plano do aluno antes de agendar.");
- const plan=check(await supabase.from("plans").select("*").eq("id",student.plan_id).eq("teacher_id",userId).single()).data;const frequency=planFrequency(plan);const time=halfHourTime(str(f,"time"));const checkDate=str(f,frequency.mode==="flexible"?"date":"starts_on");if(checkDate){const actualDate=frequency.mode==="flexible"?checkDate:firstPlannedDate(checkDate,frequency.period,Number(f.get(frequency.period==="week"?"weekday":"monthly_day")));const first=Date.parse(`${actualDate}T${time}:00-03:00`);const busy=await googleBusy(userId,new Date(first).toISOString(),new Date(first+3600000).toISOString());if(busy?.length)throw new Error("Este horário está ocupado na sua agenda Google.");}
+ const plan=check(await supabase.from("plans").select("*").eq("id",student.plan_id).eq("teacher_id",userId).single()).data;const frequency=planFrequency(plan);const time=halfHourTime(str(f,"time"));const checkDate=str(f,frequency.mode==="flexible"?"date":"starts_on");if(checkDate){const actualDate=frequency.mode==="flexible"?checkDate:firstPlannedDate(checkDate,frequency.period,Number(f.get(frequency.period==="week"?"weekday":"monthly_day")));const teacher=check(await supabase.from("teachers").select("lesson_minutes").eq("id",userId).single()).data;const first=Date.parse(`${actualDate}T${time}:00-03:00`);const busy=await googleBusy(userId,new Date(first).toISOString(),new Date(first+(teacher?.lesson_minutes??60)*60000).toISOString());if(busy?.length)throw new Error("Este horário está ocupado na sua agenda Google.");}
  if(frequency.mode==="flexible"){const date=str(f,"date");if(!date||!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error("Escolha uma data válida.");check(await supabase.from("appointments").insert({student_id:studentId,teacher_id:userId,date,time}));}
  else{const startsOn=str(f,"starts_on");if(!startsOn||!/^\d{4}-\d{2}-\d{2}$/.test(startsOn))throw new Error("Escolha uma data válida.");const weekday=frequency.period==="week"?int(f,"weekday"):null;const monthly_day=frequency.period==="month"?int(f,"monthly_day"):null;if(frequency.period==="week"&&(weekday===null||weekday<0||weekday>6)||frequency.period==="month"&&(monthly_day===null||monthly_day<1||monthly_day>31))throw new Error("Confira o dia do agendamento.");check(await supabase.from("schedules").insert({student_id:studentId,weekday,monthly_day,time,starts_on:startsOn}));}
  after(async()=>{try{await processCalendarJobs(userId);}catch{console.error("calendar_queue_failed");}});revalidatePath(`/students/${studentId}`);revalidatePath("/","layout");
 }
+
+export async function addSchedule(studentId:string,f:FormData){try{await saveSchedule(studentId,f);return {ok:true as const};}catch(cause){return {ok:false as const,message:cause instanceof Error?cause.message:"Não foi possível agendar."};}}
 
 export async function endSchedule(studentId: string, scheduleId: string, f: FormData) {
   const { supabase,userId } = await requireUser();
@@ -161,11 +163,13 @@ export async function updateTeacher(f: FormData) {
   check(
     await supabase
       .from("teachers")
-      .update({ name: str(f, "name") ?? "" })
+      .update({ name: str(f, "name") ?? "",lesson_minutes:lessonMinutes(f.get("lesson_minutes")) })
       .eq("id", userId),
   );
   revalidatePath("/", "layout");
 }
+
+function lessonMinutes(value:FormDataEntryValue|null){const minutes=Number(value);if(!Number.isInteger(minutes)||minutes<15||minutes>180||minutes%15)throw new Error("Escolha uma duração de 15 a 180 minutos.");return minutes;}
 
 function planFields(f:FormData){return {name:str(f,"name")??"Plano",lessons:positiveLessonCount(f.get("lessons")),price:parseMoney(String(f.get("price")??"")),...validatePlanFrequency(f.get("frequency_period"),f.get("frequency_count"),f.get("scheduling_mode"))};}
 

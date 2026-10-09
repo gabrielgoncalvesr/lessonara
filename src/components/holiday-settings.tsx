@@ -1,4 +1,5 @@
 "use client";
+import {Toast} from "./toast";
 import {Icon} from "@/components/icon";
 
 import {HolidaySuggestions} from "./holiday-suggestions";
@@ -76,5 +77,5 @@ export function HolidaySettingsForm({ settings, holidays, today, locked, ready }
                                 setMessage("Não foi possível remover o feriado.");
                             }
                         });
-                    }}><Icon name="trash" className="h-4 w-4"/><BusyContent pending={pending}>{removing === holiday.id ? t("Confirmar remo\u00E7\u00E3o") : t("Remover")}</BusyContent></button>{removing === holiday.id && <button className="btn-xs" disabled={pending} onClick={() => setRemoving(null)}><BusyContent pending={pending}>{t("Cancelar")}</BusyContent></button>}</> : <span className="text-xs text-muted">{t("Hist\u00F3rico preservado")}</span>}</li>)}</ul>{!holidays.length && <p className="mt-4 text-xs text-muted">{t("Nenhum feriado cadastrado ainda.")}</p>}</div></>}{message && <p role="status" className="text-xs text-accent">{t(message)}</p>}</section>;
+                    }}><Icon name="trash" className="h-4 w-4"/><BusyContent pending={pending}>{removing === holiday.id ? t("Confirmar remo\u00E7\u00E3o") : t("Remover")}</BusyContent></button>{removing === holiday.id && <button className="btn-xs" disabled={pending} onClick={() => setRemoving(null)}><BusyContent pending={pending}>{t("Cancelar")}</BusyContent></button>}</> : <span className="text-xs text-muted">{t("Hist\u00F3rico preservado")}</span>}</li>)}</ul>{!holidays.length && <p className="mt-4 text-xs text-muted">{t("Nenhum feriado cadastrado ainda.")}</p>}</div></>}{message && <Toast message={t(message)}/>}</section>;
 }

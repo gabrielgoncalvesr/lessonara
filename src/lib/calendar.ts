@@ -6,6 +6,7 @@ export type CalendarLesson = {
   date: string;
   time: string;
   status: LessonStatus;
+  durationMinutes?:number;
   name: string;
   href?: string;
   note?: string | null;
@@ -34,7 +35,7 @@ export function calendarRange(today: string) {
   return { startDate: `${shiftMonth(today.slice(0, 7), -12)}-01`, endDate: addDays(`${shiftMonth(today.slice(0, 7), 13)}-01`, -1) };
 }
 
-export function lessonTiming(lesson: Pick<CalendarLesson, "date" | "time" | "status">, today: string, time: string, durationMinutes = 60) {
+export function lessonTiming(lesson: Pick<CalendarLesson, "date" | "time" | "status" | "durationMinutes">, today: string, time: string, durationMinutes = lesson.durationMinutes??60) {
   if (lesson.status === "desmarcada" || lesson.status === "feriado") return "cancelled";
   if (lesson.status === "falta") return "absent";
   const start = Date.parse(`${lesson.date}T${lesson.time}:00Z`);
