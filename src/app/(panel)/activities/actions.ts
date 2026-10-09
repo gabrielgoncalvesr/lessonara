@@ -1,4 +1,5 @@
 "use server";
+import {requireConfiguredTeacher} from "@/lib/onboarding";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireUser,createAdminClient } from "@/lib/supabase/server";
@@ -10,7 +11,7 @@ type Result<T=undefined>={ok:true;data:T}|{ok:false;message:string};
 const fail=(message:string):{ok:false;message:string}=>({ok:false,message});
 function refresh(studentId:string,slug?:string){revalidatePath("/activities");revalidatePath(`/students/${studentId}`);revalidatePath("/documents");revalidatePath(`/student/portal/${studentId}`);if(slug)revalidatePath(`/a/${slug}`);}
 export async function assignActivity(input:{studentId:string;documentId:string;title:string;instructions:string;dueOn:string}):Promise<Result>{
- const {supabase,userId}=await requireUser();let dueOn:string|null;
+ const {supabase,userId}=await requireConfiguredTeacher();let dueOn:string|null;
  try{validDocumentText(input.title,"");dueOn=validExpiry(input.dueOn,nowInTZ().today);if(input.instructions.length>4000)throw new Error("Use instruções de até 4.000 caracteres.");}catch(error){return fail((error as Error).message);}
  const student=await supabase.from("students").select("id,slug").eq("id",input.studentId).eq("teacher_id",userId).maybeSingle();if(student.error||!student.data)return fail("Aluno não encontrado.");
  if(input.documentId){const document=await supabase.from("documents").select("id").eq("id",input.documentId).eq("teacher_id",userId).eq("status","ready").maybeSingle();if(document.error||!document.data)return fail("Documento não encontrado na sua biblioteca.");}

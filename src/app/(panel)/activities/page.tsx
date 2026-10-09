@@ -1,3 +1,5 @@
+import {loadOnboarding} from "@/lib/onboarding";
+import {SetupRequired} from "@/components/onboarding-guide";
 import {getTranslator} from "@/lib/i18n/server";
 import { Suspense } from "react";
 import PanelLoading from "../loading";
@@ -8,7 +10,7 @@ import { nowInTZ } from "@/lib/dates";
 export default function ActivitiesPage() { return <Suspense fallback={<PanelLoading />}><Content /></Suspense>; }
 async function Content() {
     const { t } = await getTranslator();
-    const { supabase, userId } = await requireUser();
+    const { supabase, userId } = await requireUser();if(!(await loadOnboarding()).ready)return <SetupRequired/>;
     const [loaded, documents, students] = await Promise.all([loadActivities(supabase, userId), supabase.from("documents").select("id,title,file_name").eq("teacher_id", userId).eq("status", "ready").order("title").returns<ActivityDocument[]>(), supabase.from("students").select("id,name,active").eq("teacher_id", userId).order("name")]);
     if (students.error)
         throw students.error;

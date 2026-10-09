@@ -1,3 +1,4 @@
+import {needsSchedule} from "@/lib/student-setup";
 import {ReplacementPrompt,CancelLessonButton} from "@/components/cancel-lesson-button";
 import {planFrequency} from "@/lib/plan-frequency";
 import {resendWelcome} from "../../emails/actions";
@@ -43,10 +44,11 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
     const plan = plans.find((p) => p.id === student.plan_id);
     const { ledger, schedules, packages, today,appointments } = (await loadLedgers(supabase, [id])).get(id)!;
     const teacherDuration=await supabase.from("teachers").select("lesson_minutes").eq("id",userId).single();
+    const pendingSetup=needsSchedule(student.active,schedules,(appointments??[]).filter(a=>!ledger.lessons.some(l=>l.date===a.date&&l.time===a.time&&l.status==="desmarcada")),today);
     const scheduleLimit = weeklyScheduleLimit(null, plan?.weekly_lessons);
     const lessons = visibleLessons(ledger, today);
     const upcoming = lessons.filter((l) => !l.past);
-    const history = lessons.filter((l) => l.past).reverse();
+    const history = lessons.filter((l) => l.past&&l.status!=="reposicao").reverse();
     const replaced=new Set(lessons.map(l=>l.event?.source_event_id).filter(Boolean));const cancelled=ledger.lessons.filter(l=>l.event?.kind==="desmarcada"&&!replaced.has(l.event.id));
     const link = `${await getOrigin()}/p/${student.teacher_id}/s/${encodeURIComponent(student.slug)}`;
     const lessonActions = (l: (typeof lessons)[number]) => l.status === "feriado" ? null : l.event ? (<ActionForm action={deleteEvent.bind(null, id, l.event.id)}>
@@ -60,17 +62,13 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
     return (<main className="space-y-6">
       <div className="detail-heading flex flex-wrap items-center gap-3">
         <Link href="/students" className="text-sm text-muted hover:text-fg">{t("\u2190 Alunos")}</Link>
-        <h1 className="w-full text-xl font-semibold">{student.name}</h1>
+        <h1 className="w-full text-xl font-semibold">{student.name}</h1>{pendingSetup&&<span className="balance-pill balance-warning">{t("Pendente · configurar horário")}</span>}
         <CopyButton text={link}/><ActionForm action={resendWelcome}><input type="hidden" name="studentId" value={student.id}/><SubmitButton className="btn-xs" icon="mail">{t("Reenviar convite")}</SubmitButton></ActionForm>
 
       </div>
 
       <ReplacementPrompt studentId={id} today={today}/><Balance ledger={ledger}/>
-      <StudentProfileTabs aulas={<div className="detail-grid profile-lessons-grid">
-            <section className="card">
-              <h2 className="h2">{t("Pr\u00F3ximas aulas")}</h2>
-              <LessonList lessons={upcoming} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/>
-              <details className="mt-3">
+      <StudentProfileTabs reposicoes={<section className="card space-y-4"><h2 className="h2">{t("Reposições")}</h2><p className="text-sm text-muted">{t("Agende a reposição de uma aula desmarcada, mantendo o vínculo com a aula original.")}</p><details className="mt-3">
                 <summary className="cursor-pointer text-sm text-accent">{t("+ Lan\u00E7ar reposi\u00E7\u00E3o")}</summary>
                 <ActionForm action={addReposicao.bind(null, id)} className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4"><select className="input col-span-2" name="source_event_id" required defaultValue=""><option value="" disabled>{t("Selecione a aula desmarcada")}</option>{cancelled.map(l=><option key={l.event!.id} value={l.event!.id}>{formatDate(l.date,locale)} · {l.time}</option>)}</select>
                   <input className="input" name="date" type="date" required defaultValue={today}/>
@@ -78,7 +76,11 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
                   <input className="input" name="note" placeholder={t("observa\u00E7\u00E3o")}/>
                   <SubmitButton className="btn">{t("Adicionar")}</SubmitButton>
                 </ActionForm>
-              </details>
+              </details><LessonList lessons={ledger.lessons.filter(l=>l.status==="reposicao")} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/></section>} aulas={<div className="detail-grid profile-lessons-grid">
+            <section className="card">
+              <h2 className="h2">{t("Pr\u00F3ximas aulas")}</h2>
+              <LessonList lessons={upcoming.filter(l=>l.status!=="reposicao")} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/>
+
             </section>
 
             <section className="card">

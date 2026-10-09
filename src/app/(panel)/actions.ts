@@ -1,5 +1,6 @@
 "use server";
 
+import {requireConfiguredTeacher} from "@/lib/onboarding";
 import {processCalendarJobs} from "@/lib/google/worker";
 import {googleBusy} from "@/lib/google/calendar";
 import {parseMoney,positiveLessonCount} from "@/lib/money";
@@ -43,7 +44,8 @@ function studentFields(f: FormData) {
 }
 
 export async function createStudent(f: FormData) {
-  const { supabase, userId } = await requireUser();
+  const { supabase, userId } = await requireConfiguredTeacher();
+  const planId=str(f,"plan_id");const plan=check(await supabase.from("plans").select("id").eq("teacher_id",userId).eq("id",planId??"").eq("is_active",true).maybeSingle()).data;if(!plan)throw new Error("Escolha um plano ativo para o aluno.");
   const { data } = check(
     await supabase
       .from("students")
@@ -163,15 +165,16 @@ export async function updateTeacher(f: FormData) {
   check(
     await supabase
       .from("teachers")
-      .update({ name: str(f, "name") ?? "",lesson_minutes:lessonMinutes(f.get("lesson_minutes")) })
+      .update({ name:teacherName(f.get("name")),lesson_minutes:lessonMinutes(f.get("lesson_minutes")),profile_completed_at:new Date().toISOString() })
       .eq("id", userId),
   );
   revalidatePath("/", "layout");
 }
 
+function teacherName(value:FormDataEntryValue|null){const name=String(value??"").trim();if(!name||name.length>120)throw new Error("Informe seu nome, com até 120 caracteres.");return name;}
 function lessonMinutes(value:FormDataEntryValue|null){const minutes=Number(value);if(!Number.isInteger(minutes)||minutes<15||minutes>180||minutes%15)throw new Error("Escolha uma duração de 15 a 180 minutos.");return minutes;}
 
-function planFields(f:FormData){return {name:str(f,"name")??"Plano",lessons:positiveLessonCount(f.get("lessons")),price:parseMoney(String(f.get("price")??"")),...validatePlanFrequency(f.get("frequency_period"),f.get("frequency_count"),f.get("scheduling_mode"))};}
+function planFields(f:FormData){return {is_active:true,name:str(f,"name")??"Plano",lessons:positiveLessonCount(f.get("lessons")),price:parseMoney(String(f.get("price")??"")),...validatePlanFrequency(f.get("frequency_period"),f.get("frequency_count"),f.get("scheduling_mode"))};}
 
 export async function createPlan(f: FormData) {
   const { supabase, userId } = await requireUser();

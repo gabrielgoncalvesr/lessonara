@@ -4,6 +4,7 @@ import { useEffect,useState, type KeyboardEvent, type ReactNode } from "react";
 import { Icon } from "./icon";
 const tabs = [
     { id: "aulas", hash: "lessons", label: "Aulas", icon: "calendar" },
+    {id:"reposicoes",hash:"replacements",label:"Reposições",icon:"calendar"},
     { id: "pacotes", hash: "payments", label: "Pacotes pagos", icon: "book" },
     { id: "horarios", hash: "schedule", label: "Horários", icon: "clock" },
     { id: "dados", hash: "details", label: "Dados do aluno", icon: "users" },

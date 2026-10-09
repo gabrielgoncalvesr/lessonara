@@ -167,3 +167,14 @@ A migration 0014 adiciona a duração configurável (15–180 minutos) do profes
 Configurações é dividida em Geral, Integrações, Feriados e Planos. Valores usam máscara de centavos durante a digitação e limite de R$ 99.000,00 no frontend e backend. Frequência e créditos continuam separados, com sugestões de quantidade e duração aproximada do pacote. As escolhas de idioma/aparência estão disponíveis após o login.
 
 Correções usam uma única origem de arquivo por vez: biblioteca pesquisável ou novo upload. O formulário é renovado após salvar. Resultados de ações aparecem em notificações temporárias; avisos persistentes e instruções permanecem no contexto. A sincronização Google mostra uma confirmação antes de importar/processar pendências e fica desabilitada quando não há itens.
+
+
+## Primeiro acesso e planos da plataforma
+
+A migration 0015 remove os planos automáticos de contas novas. O professor precisa salvar nome/duração e ativar um plano antes de cadastrar alunos, materiais ou atividades. O bloqueio é aplicado na interface, nas ações de criação e no banco. Contas anteriores com alunos vinculados têm suas configurações preservadas; sugestões não utilizadas exigem confirmação. As preferências de idioma/aparência continuam sendo por navegador.
+
+A conta de teste pode ser colocada no fluxo inicial mantendo seus alunos e configurações existentes como sugestões. Um aluno ativo sem horário vigente ou data avulsa futura aparece como pendente; reposições têm uma aba própria.
+
+Meu plano apresenta Essencial, Profissional e Studio. Essencial inclui os recursos atuais nesta fase de lançamento; os outros dois são uma prévia sem cobrança ou contratação. O identificador do plano da plataforma não pode ser alterado pelo usuário através da API. Regras comerciais e cobrança ficam para a etapa de assinaturas.
+
+Veja [TASKS.md](TASKS.md) para a revisão completa de validação dos formulários.

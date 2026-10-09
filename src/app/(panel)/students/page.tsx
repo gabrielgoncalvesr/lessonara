@@ -1,3 +1,5 @@
+import {loadOnboarding} from "@/lib/onboarding";
+import {OnboardingGuide} from "@/components/onboarding-guide";
 import { Suspense } from "react";
 import PanelLoading from "../loading";
 import { Dashboard } from "@/components/dashboard";
@@ -8,5 +10,5 @@ export default function StudentsPage() {
 }
 
 async function PageContent() {
-  return <Dashboard directoryOnly {...await loadTeacherOverview()} />;
+  const state=await loadOnboarding();return <>{!state.ready&&<OnboardingGuide state={state}/>}<Dashboard setupReady={state.ready} directoryOnly {...await loadTeacherOverview()} /></>;
 }

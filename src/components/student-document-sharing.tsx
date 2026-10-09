@@ -19,11 +19,11 @@ function SharedItem({ share, studentId, today }: {
     const [expiry, setExpiry] = useState(share.expiresOn ?? "");
     const [confirmRevoke, setConfirmRevoke] = useState(false);
     const [pending, startTransition] = useTransition();
-    const [message, setMessage] = useState("");
+    const [message, setMessage] = useState("");const [busyAction,setBusyAction]=useState("");
     const expired = !shareAvailable(share.expiresOn, today);
     return <li className="student-document-item"><div><h3>{share.title}</h3><p className="mt-1 text-xs text-muted">{share.subject && t("{value0} \u00B7 ", { value0: share.subject })}{formatFileSize(share.byteSize)}</p><span className={`balance-pill mt-3 ${expired ? "balance-warning" : ""}`}>{expired ? t("Prazo encerrado") : share.expiresOn ? t("Dispon\u00EDvel at\u00E9 {value0}", { value0: formatDate(share.expiresOn, locale) }) : t("Sem prazo de acesso")}</span></div><div className="student-document-controls"><form onSubmit={(event) => {
             event.preventDefault();
-            setMessage("");
+            setMessage("");setBusyAction("save");
             startTransition(async () => {
                 try {
                     const result = await changeDocumentShare(studentId, share.id, expiry);
@@ -33,12 +33,12 @@ function SharedItem({ share, studentId, today }: {
                     setMessage("Não foi possível atualizar o prazo.");
                 }
             });
-        }}><label className="label" htmlFor={`expiry-${share.id}`}>{t("Validade para este aluno (opcional)")}</label><div className="flex gap-2"><input id={`expiry-${share.id}`} className="input" type="date" min={today} value={expiry} onChange={(event) => setExpiry(event.target.value)} disabled={pending}/><button type="submit" className="btn-xs" disabled={pending}><Icon name="save" className="h-4 w-4"/><BusyContent pending={pending}>{t("Salvar prazo")}</BusyContent></button></div><div className="mt-2 flex items-center gap-3"><button type="button" className="portal-text-button text-xs" disabled={pending} onClick={() => setExpiry("")}><BusyContent pending={pending}>{t("Sem prazo")}</BusyContent></button><span className="text-[10px] text-muted">{t("Escolha e salve o prazo de acesso.")}</span></div></form><button className="btn-xs btn-danger" disabled={pending} onClick={() => {
+        }}><label className="label" htmlFor={`expiry-${share.id}`}>{t("Validade para este aluno (opcional)")}</label><div className="flex gap-2"><input id={`expiry-${share.id}`} className="input" type="date" min={today} value={expiry} onChange={(event) => setExpiry(event.target.value)} disabled={pending}/><button type="submit" className="btn-xs" disabled={pending}><Icon name="save" className="h-4 w-4"/><BusyContent pending={pending&&busyAction==="save"}>{t("Salvar prazo")}</BusyContent></button></div><div className="mt-2 flex items-center gap-3"><button type="button" className="portal-text-button text-xs" disabled={pending} onClick={() => setExpiry("")}>{t("Sem prazo")}</button><span className="text-[10px] text-muted">{t("Escolha e salve o prazo de acesso.")}</span></div></form><button className="btn-xs btn-danger" disabled={pending} onClick={() => {
             if (!confirmRevoke) {
                 setConfirmRevoke(true);
                 return;
             }
-            startTransition(async () => {
+            setBusyAction("revoke");setMessage("");startTransition(async () => {
                 try {
                     const result = await revokeDocumentShare(studentId, share.id);
                     if (!result.ok)
@@ -48,7 +48,7 @@ function SharedItem({ share, studentId, today }: {
                     setMessage("Não foi possível encerrar o acesso.");
                 }
             });
-        }}><Icon name="archive" className="h-4 w-4"/><BusyContent pending={pending}>{confirmRevoke ? t("Confirmar encerramento") : t("Encerrar acesso")}</BusyContent></button>{confirmRevoke && <><p role="alert" className="text-xs text-muted">{t("Este aluno perder\u00E1 o acesso. O arquivo e os demais alunos ser\u00E3o mantidos.")}</p><button type="button" className="btn-xs" disabled={pending} onClick={() => setConfirmRevoke(false)}><BusyContent pending={pending}>{t("Cancelar encerramento")}</BusyContent></button></>}{message && <Toast message={t(message)}/>}</div></li>;
+        }}><Icon name="archive" className="h-4 w-4"/><BusyContent pending={pending&&busyAction==="revoke"}>{confirmRevoke ? t("Confirmar encerramento") : t("Encerrar acesso")}</BusyContent></button>{confirmRevoke && <><p role="alert" className="text-xs text-muted">{t("Este aluno perder\u00E1 o acesso. O arquivo e os demais alunos ser\u00E3o mantidos.")}</p><button type="button" className="btn-xs" disabled={pending} onClick={() => setConfirmRevoke(false)}>{t("Cancelar encerramento")}</button></>}{message && <Toast message={t(message)}/>}</div></li>;
 }
 export function StudentDocumentSharing({ studentId, documents, shares, today, ready }: {
     studentId: string;

@@ -1,4 +1,5 @@
 "use server";
+import {requireConfiguredTeacher} from "@/lib/onboarding";
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
@@ -12,7 +13,7 @@ const failure = (message: string): { ok: false; message: string } => ({ ok: fals
 const refreshDocuments = () => revalidatePath("/", "layout");
 
 export async function beginDocumentUpload(input: { title: string; subject: string; fileName: string; byteSize: number }): Promise<Result<{ id: string; path: string; token: string; mimeType: string }>> {
-  const { supabase, userId } = await requireUser();
+  const { supabase, userId } = await requireConfiguredTeacher();
   let details;
   let file;
   try { details = validDocumentText(input.title, input.subject); file = validateDocumentFile(input.fileName, input.byteSize); }

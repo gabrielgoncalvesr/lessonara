@@ -19,13 +19,14 @@ export type Student = {
 };
 
 export type Teacher = {
-  lesson_minutes?:number;
+  lesson_minutes?:number;profile_completed_at?:string|null;platform_plan?:string;
   id: string;
   name: string;
   email: string;
 };
 
 export type Plan = {
+  is_active?:boolean;
   frequency_period?:"week"|"month";frequency_count?:number;scheduling_mode?:"recurring"|"flexible";
   weekly_lessons?: number;
   id: string;
