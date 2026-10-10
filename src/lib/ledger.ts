@@ -2,6 +2,7 @@ import {safeMeetUrl} from "./meeting-url";
 import { addDays, weekday } from "./dates";
 
 export type Schedule = {
+  id?: string;
   meet_url?:string|null;duration_minutes?:number;monthly_day?:number|null;
   weekday: number; // 0 = domingo
   time: string; // "HH:MM"
@@ -33,6 +34,8 @@ export type HolidayPolicy = "consume" | "preserve";
 export type LessonStatus = "agendada" | "dada" | "falta" | "desmarcada" | "reposicao" | "feriado";
 
 export type Lesson = {
+  sourceKind?: "schedule" | "appointment" | "makeup";
+  sourceId?: string;
   date: string;
   time: string;
   status: LessonStatus;
@@ -99,14 +102,14 @@ export function computeLedger(input: {
       const holidayName = holidays.get(date) ?? null;
       const status: LessonStatus = event ? event.kind : holidayName ? "feriado" : past ? "dada" : "agendada";
       const counts = status !== "desmarcada" && (status !== "feriado" || input.holidayPolicy === "consume");
-      lessons.push({ date, time: s.time, status, counts, past, packageIndex: null, packageId: null, event, holidayName,durationMinutes:s.duration_minutes??60,meetUrl:safeMeetUrl(s.meet_url) });
+      lessons.push({ sourceKind: "schedule", sourceId: s.id, date, time: s.time, status, counts, past, packageIndex: null, packageId: null, event, holidayName,durationMinutes:s.duration_minutes??60,meetUrl:safeMeetUrl(s.meet_url) });
     }
   }
-  for(const a of input.appointments??[]){if(a.date>limit)continue;const event=(byDate.get(a.date)??[]).find(e=>!e.time||e.time===a.time)??null;const past=isPast(a.date,a.time);const holidayName=holidays.get(a.date)??null;const status:LessonStatus=event?event.kind:holidayName?"feriado":past?"dada":"agendada";lessons.push({date:a.date,time:a.time,status,counts:status!=="desmarcada"&&(status!=="feriado"||input.holidayPolicy==="consume"),past,packageIndex:null,packageId:null,event,holidayName,durationMinutes:a.duration_minutes??60,meetUrl:safeMeetUrl(a.meet_url)});}
+  for(const a of input.appointments??[]){if(a.date>limit)continue;const event=(byDate.get(a.date)??[]).find(e=>!e.time||e.time===a.time)??null;const past=isPast(a.date,a.time);const holidayName=holidays.get(a.date)??null;const status:LessonStatus=event?event.kind:holidayName?"feriado":past?"dada":"agendada";lessons.push({sourceKind:"appointment",sourceId:a.id,date:a.date,time:a.time,status,counts:status!=="desmarcada"&&(status!=="feriado"||input.holidayPolicy==="consume"),past,packageIndex:null,packageId:null,event,holidayName,durationMinutes:a.duration_minutes??60,meetUrl:safeMeetUrl(a.meet_url)});}
   for (const e of events) {
     if (e.kind !== "reposicao") continue;
     const t = e.time ?? "00:00";
-    lessons.push({ date: e.date, time: t, status: "reposicao", counts: true, past: isPast(e.date, t), packageIndex: null, packageId: null, event: e,durationMinutes:e.duration_minutes??60,meetUrl:safeMeetUrl(e.meet_url) });
+    lessons.push({ sourceKind:"makeup", sourceId:e.id, date: e.date, time: t, status: "reposicao", counts: true, past: isPast(e.date, t), packageIndex: null, packageId: null, event: e,durationMinutes:e.duration_minutes??60,meetUrl:safeMeetUrl(e.meet_url) });
   }
 
   lessons.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));

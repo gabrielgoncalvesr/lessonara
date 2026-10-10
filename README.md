@@ -178,3 +178,7 @@ A conta de teste pode ser colocada no fluxo inicial mantendo seus alunos e confi
 Meu plano apresenta Essencial, Profissional e Studio. Essencial inclui os recursos atuais nesta fase de lançamento; os outros dois são uma prévia sem cobrança ou contratação. O identificador do plano da plataforma não pode ser alterado pelo usuário através da API. Regras comerciais e cobrança ficam para a etapa de assinaturas.
 
 Veja [TASKS.md](TASKS.md) para a revisão completa de validação dos formulários.
+
+## Sala online
+
+Veja [CLASSROOM.md](CLASSROOM.md) para a integração Jitsi, autenticação, configuração e limites de rede.

@@ -9,6 +9,7 @@ export type CalendarLesson = {
   durationMinutes?:number;
   name: string;
   href?: string;
+  classroomHref?: string;
   note?: string | null;
 };
 

@@ -1,6 +1,9 @@
+import {Icon} from "@/components/icon";
 import {needsSchedule} from "@/lib/student-setup";
 import {ReplacementPrompt,CancelLessonButton} from "@/components/cancel-lesson-button";
 import {planFrequency} from "@/lib/plan-frequency";
+import {getJitsiConfig} from "@/lib/classroom-server";
+import {classroomHref,nextJoinableLesson} from "@/lib/classroom";
 import {resendWelcome} from "../../emails/actions";
 import {MoneyField} from "@/components/money-field";
 import {ActionForm,SubmitButton} from "@/components/action-form";
@@ -21,7 +24,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { CopyButton } from "@/components/copy-button";
 import { LessonList } from "@/components/lesson-list";
 import { loadLedgers, studentPrice, type Plan, type Student } from "@/lib/data";
-import { formatBRL, formatDate, WEEKDAYS } from "@/lib/dates";
+import { nowInTZ, formatBRL, formatDate, WEEKDAYS } from "@/lib/dates";
 import { visibleLessons } from "@/lib/ledger";
 import { getOrigin } from "@/lib/origin";
 import { requireUser } from "@/lib/supabase/server";
@@ -48,6 +51,8 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
     const scheduleLimit = weeklyScheduleLimit(null, plan?.weekly_lessons);
     const lessons = visibleLessons(ledger, today);
     const upcoming = lessons.filter((l) => !l.past);
+    const classroomNext = getJitsiConfig() ? nextJoinableLesson(ledger.lessons,Date.parse(`${today}T${nowInTZ().time}:00-03:00`)) : null;
+    const classroomLink = classroomNext ? classroomHref(id,classroomNext) : null;
     const history = lessons.filter((l) => l.past&&l.status!=="reposicao").reverse();
     const replaced=new Set(lessons.map(l=>l.event?.source_event_id).filter(Boolean));const cancelled=ledger.lessons.filter(l=>l.event?.kind==="desmarcada"&&!replaced.has(l.event.id));
     const link = `${await getOrigin()}/p/${student.teacher_id}/s/${encodeURIComponent(student.slug)}`;
@@ -79,7 +84,7 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
               </details><LessonList lessons={ledger.lessons.filter(l=>l.status==="reposicao")} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/></section>} aulas={<div className="detail-grid profile-lessons-grid">
             <section className="card">
               <h2 className="h2">{t("Pr\u00F3ximas aulas")}</h2>
-              <LessonList lessons={upcoming.filter(l=>l.status!=="reposicao")} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/>
+              {classroomLink && <Link href={classroomLink} target="_blank" rel="noreferrer" className="btn mb-4"><Icon name="video" className="h-4 w-4"/>{t("Entrar na aula")}</Link>}<LessonList lessons={upcoming.filter(l=>l.status!=="reposicao")} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/>
 
             </section>
 
