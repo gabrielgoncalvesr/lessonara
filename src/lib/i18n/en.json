@@ -929,5 +929,7 @@
   "Início": "Start",
   "Salve a regra para aplicar as datas cadastradas aos pacotes.": "Save the rule to apply the registered dates to packages.",
   "A regra pode mudar até a primeira aula afetada. Depois disso, a forma de contagem fica travada.": "The rule can change until the first affected lesson. After that, the credit policy is locked.",
-  "Conclua a configuração inicial em Configurações antes de continuar.": "Complete your initial setup in Settings before continuing."
+  "Conclua a configuração inicial em Configurações antes de continuar.": "Complete your initial setup in Settings before continuing.",
+  "Bloqueado · sobrepõe outra aula": "Blocked · overlaps another lesson",
+  "Bloqueado · ocupado no Google": "Blocked · busy in Google"
 }

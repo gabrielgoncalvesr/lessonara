@@ -929,5 +929,7 @@
   "Início": "Début",
   "Salve a regra para aplicar as datas cadastradas aos pacotes.": "Enregistrez la règle pour appliquer les dates saisies aux forfaits.",
   "A regra pode mudar até a primeira aula afetada. Depois disso, a forma de contagem fica travada.": "La règle peut changer jusqu’au premier cours concerné. Ensuite, le mode de décompte est verrouillé.",
-  "Conclua a configuração inicial em Configurações antes de continuar.": "Terminez la configuration initiale dans les paramètres avant de continuer."
+  "Conclua a configuração inicial em Configurações antes de continuar.": "Terminez la configuration initiale dans les paramètres avant de continuer.",
+  "Bloqueado · sobrepõe outra aula": "Bloqué · chevauche un autre cours",
+  "Bloqueado · ocupado no Google": "Bloqué · occupé dans Google"
 }

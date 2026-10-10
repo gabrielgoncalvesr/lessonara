@@ -929,5 +929,7 @@
   "Início": "Inicio",
   "Salve a regra para aplicar as datas cadastradas aos pacotes.": "Guarda la regla para aplicar las fechas registradas a los paquetes.",
   "A regra pode mudar até a primeira aula afetada. Depois disso, a forma de contagem fica travada.": "La regla puede cambiar hasta la primera clase afectada. Después, la forma de contar queda bloqueada.",
-  "Conclua a configuração inicial em Configurações antes de continuar.": "Completa la configuración inicial en Configuración antes de continuar."
+  "Conclua a configuração inicial em Configurações antes de continuar.": "Completa la configuración inicial en Configuración antes de continuar.",
+  "Bloqueado · sobrepõe outra aula": "Bloqueado · se superpone con otra clase",
+  "Bloqueado · ocupado no Google": "Bloqueado · ocupado en Google"
 }
