@@ -53,7 +53,7 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
     const upcoming = lessons.filter((l) => !l.past);
     const classroomNext = getJitsiConfig() ? nextJoinableLesson(ledger.lessons,Date.parse(`${today}T${nowInTZ().time}:00-03:00`)) : null;
     const classroomLink = classroomNext ? classroomHref(id,classroomNext) : null;
-    const history = lessons.filter((l) => l.past&&l.status!=="reposicao").reverse();
+    const history = lessons.filter((l) => l.past).reverse();
     const replaced=new Set(lessons.map(l=>l.event?.source_event_id).filter(Boolean));const cancelled=ledger.lessons.filter(l=>l.event?.kind==="desmarcada"&&!replaced.has(l.event.id));
     const link = `${await getOrigin()}/p/${student.teacher_id}/s/${encodeURIComponent(student.slug)}`;
     const lessonActions = (l: (typeof lessons)[number]) => l.status === "feriado" ? null : l.event ? (<ActionForm action={deleteEvent.bind(null, id, l.event.id)}>
@@ -84,7 +84,7 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
               </details><LessonList lessons={ledger.lessons.filter(l=>l.status==="reposicao")} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/></section>} aulas={<div className="detail-grid profile-lessons-grid">
             <section className="card">
               <h2 className="h2">{t("Pr\u00F3ximas aulas")}</h2>
-              {classroomLink && <Link href={classroomLink} target="_blank" rel="noreferrer" className="btn mb-4"><Icon name="video" className="h-4 w-4"/>{t("Entrar na aula")}</Link>}<LessonList lessons={upcoming.filter(l=>l.status!=="reposicao")} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/>
+              {classroomLink && <Link href={classroomLink} target="_blank" rel="noreferrer" className="btn mb-4"><Icon name="video" className="h-4 w-4"/>{t("Entrar na aula")}</Link>}<LessonList lessons={upcoming} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/>
 
             </section>
 
