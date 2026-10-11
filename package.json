@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build && node scripts/check-build-css.mjs",
+    "dev": "node scripts/copy-pdf-worker.mjs && next dev",
+    "build": "node scripts/copy-pdf-worker.mjs && next build && node scripts/check-build-css.mjs",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
@@ -17,6 +17,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "libphonenumber-js": "^1.13.15",
     "next": "16.4.0",
+    "pdfjs-dist": "^6.4.299",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "resend": "^6.32.1"

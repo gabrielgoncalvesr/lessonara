@@ -26,7 +26,15 @@ Sem as três variáveis válidas, o portal conserva seu link Google Meet existen
 
 ## Vídeo e quadro
 
-Usa external_api.js do Jitsi próprio, com pré-entrada para dispositivos, microfone e câmera inicialmente desligados, compartilhamento de tela e o quadro/anotações já instalados na PoC. Não há gravação nem transcrição. Quadro e anotações não são salvos como material permanente.
+Usa external_api.js do Jitsi próprio, com pré-entrada para dispositivos, microfone e câmera inicialmente desligados, compartilhamento de tela e anotações de tela instaladas na PoC. Não há gravação nem transcrição. O quadro nativo do Jitsi fica desativado no Lessonara.
+
+## PDF e quadro do Lessonara
+
+O professor apresenta um PDF privado da biblioteca ou envia um arquivo de até 20 MB. O upload usa o fluxo e a cota da biblioteca; o arquivo permanece nela. PDF.js renderiza o documento na própria sala. Professor controla página, rolagem, laser, caneta, texto e limpeza. O × ou Esc desativa a ferramenta sem apagar as marcas. O aluno acompanha em modo de leitura. A troca de sala continua manual.
+
+O backend autentica cada operação. Somente o professor proprietário pode publicar o estado ou listar a biblioteca. Um estado criptografado e autenticado vincula documento e anotações à ocorrência e ao proprietário, com validade de 12 horas. A URL assinada do arquivo dura 60 segundos. Mensagens de participantes transportam esse estado pelo Jitsi em partes limitadas; o backend verifica a autorização antes da leitura, sem confiar no papel informado pelo cliente.
+
+As anotações não são gravadas no PDF nem no banco. Um participante que permanece na sala pode retransmitir o último estado válido a quem entrar ou recarregar. Quando todos saem, o estado temporário se perde; o arquivo continua na biblioteca. Pedidos de permissão para o aluno escrever ficam para uma versão futura. As ferramentas do navegador não desenham sobre janelas de outros aplicativos.
 
 A mídia depende da rede: o túnel Cloudflare transporta o acesso web, não a mídia UDP. O 1:1 pode usar P2P; o fallback por JVB/TURN precisa de conectividade apropriada. A verificação de protocolo confirma autenticação e papéis, mas não substitui teste de câmera e áudio reais entre duas redes.
 

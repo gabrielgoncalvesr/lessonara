@@ -868,3 +868,22 @@ input[type="radio"],input[type="checkbox"]{accent-color:var(--accent)}
 .classroom-state h1 {font-size:22px;line-height:1.4;font-weight:600;margin-bottom:18px;}
 .classroom-state p {color:var(--muted);font-size:14px;line-height:1.7;margin:16px 0 24px;}
 body:has(.classroom-screen),html:has(.classroom-screen) {overflow:hidden;scrollbar-gutter:auto;}
+
+.classroom-material-toolbar {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line);font-size:13px;flex-shrink:0;}
+.classroom-material-toolbar>strong {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:35%;}
+.classroom-screen.pdf-presenting {display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,34%);grid-template-rows:auto minmax(0,1fr);}
+.pdf-presenting>.classroom-material-toolbar {grid-column:1/-1;grid-row:1;}
+.pdf-presenting>.classroom-video {grid-column:2;grid-row:2;}
+.classroom-pdf-panel {grid-column:1;grid-row:2;display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg);border-right:1px solid var(--line);}
+.classroom-pdf-tools {display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;padding:10px;background:var(--surface);font-size:12px;}
+.classroom-pdf-scroll {min-height:0;overflow:auto;flex:1;padding:20px;}
+.classroom-pdf-page {position:relative;max-width:1000px;margin:auto;background:white;box-shadow:0 4px 20px #0002;}
+.classroom-pdf-page>canvas {display:block;width:100%;height:100%;}
+.classroom-pdf-page>canvas[hidden] {display:none;}
+.classroom-pdf-overlay {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.classroom-pdf-overlay.pdf-drawing {pointer-events:auto;touch-action:none;cursor:crosshair;}
+.pdf-tool-selected {background:var(--accent);color:var(--accent-fg);}
+.pdf-error {position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;color:#283d39;background:#fffffff0;}
+@media(max-width:850px) {.classroom-screen.pdf-presenting {grid-template-columns:1fr;grid-template-rows:auto minmax(0,3fr) minmax(0,2fr);} .pdf-presenting>.classroom-video {grid-column:1;grid-row:3;} .classroom-pdf-scroll {padding:10px;}}
+
+.pdf-text-input {position:absolute;z-index:2;padding:6px 10px;max-width:90%;width:200px;border:2px solid #c53e35;border-radius:6px;background:white;color:#283d39;}

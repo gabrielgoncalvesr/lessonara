@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated PDF.js viewer assets
+/public/pdf.worker.min.mjs
+/public/pdf-assets/
