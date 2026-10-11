@@ -21,3 +21,8 @@ export function canAddWeeklySchedule(schedules: Schedule[], limit: number, start
   const boundaries = [first, ...intervals.filter((interval) => interval.start > first).map((interval) => interval.start)];
   return boundaries.every((date) => intervals.filter((interval) => interval.start <= date && (!interval.end || interval.end >= date)).length < limit);
 }
+
+/** Um horário com fim definido permite configurar o sucessor, sujeito às datas e limites do backend. */
+export function canConfigureNewSchedule(schedules: Schedule[], limit: number) {
+  return limit > 0 && schedules.filter(schedule => !schedule.ends_on).length < limit;
+}
