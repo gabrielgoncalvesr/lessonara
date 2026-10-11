@@ -1,0 +1,2 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const {isCallUrl}=require('../links.cjs');
+test('desktop allows calls and exact room references, keeping the portal in the browser',()=>{assert(isCallUrl('https://lessonara.mosaic-labs.co/calls'));assert(!isCallUrl('https://lessonara.mosaic-labs.co/'));assert(!isCallUrl('https://lessonara.mosaic-labs.co/settings'));assert(!isCallUrl('https://lessonara.mosaic-labs.co/calls?redirect=https://evil.test'));assert(!isCallUrl('https://evil.test/calls'));assert(!isCallUrl('file:///calls'));});

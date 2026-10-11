@@ -10,7 +10,7 @@ export async function signIn(_prev: SignInState, formData: FormData): Promise<Si
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password: String(formData.get("password")) });
   if (error) return { error: "Email ou senha inválidos.", email };
-  redirect("/");
+  redirect(formData.get("destination")==="calls"?"/calls":"/");
 }
 
 export async function signOut() {

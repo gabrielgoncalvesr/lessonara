@@ -5,4 +5,5 @@ function validRoomPath(path){const match=path.match(roomPattern);if(!match)retur
 function deepLinkToUrl(value){try{const link=new URL(value);if(link.protocol!=='lessonara:'||link.hostname!=='classroom'||link.username||link.password||link.port||link.search||link.hash)return null;const path='/classroom'+link.pathname;return validRoomPath(path)?APP_ORIGIN+path:null;}catch{return null;}}
 function isAppUrl(value){try{const url=new URL(value);return url.origin===APP_ORIGIN&&!url.username&&!url.password;}catch{return false;}}
 function isMediaOrigin(value){try{return [APP_ORIGIN,'https://meet.mosaic-labs.co'].includes(new URL(value).origin);}catch{return false;}}
-module.exports={APP_ORIGIN,validRoomPath,deepLinkToUrl,isAppUrl,isMediaOrigin};
+function isCallUrl(value){try{const u=new URL(value);return isAppUrl(value)&&!u.search&&!u.hash&&(u.pathname==='/calls'||validRoomPath(u.pathname));}catch{return false;}}
+module.exports={APP_ORIGIN,validRoomPath,deepLinkToUrl,isCallUrl,isAppUrl,isMediaOrigin};

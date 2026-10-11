@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import {DesktopCallControls} from "./desktop-call-controls";
 import {ClassroomPdf} from "./classroom-pdf";
 import {createBrowserSupabase} from "@/lib/supabase/browser";
 import type {RealtimeChannel} from "@supabase/supabase-js";
@@ -13,6 +14,7 @@ export function Classroom({ joinUrl, backHref }: { joinUrl: string; backHref: st
   const container = useRef<HTMLDivElement>(null);
   const apiRef=useRef<JitsiApi|null>(null);const materialMessage=useRef<((text:string)=>void)|null>(null);
   const materialChannel=useRef<RealtimeChannel|null>(null);const [channelName,setChannelName]=useState("");const [materialConnected,setMaterialConnected]=useState(false);
+  const [compact,setCompact]=useState(false);const [joined,setJoined]=useState(false);
   const [role,setRole]=useState<"teacher"|"student">("student");const [pdfOpen,setPdfOpen]=useState(false);
   const broadcast=useCallback((text:string)=>{void materialChannel.current?.send({type:"broadcast",event:"material",payload:{text}}).catch(()=>setMaterialConnected(false));},[]);
   const [attempt, setAttempt] = useState(0);
@@ -35,7 +37,7 @@ export function Classroom({ joinUrl, backHref }: { joinUrl: string; backHref: st
     let api: JitsiApi | null = null;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let script: HTMLScriptElement | null = null;
-    const fail = (message: string) => { if (controller.signal.aborted) return; clearTimeout(timer); api?.dispose(); api = null; apiRef.current=null; setState({ message }); };
+    const fail = (message: string) => { if (controller.signal.aborted) return; clearTimeout(timer); api?.dispose(); api = null; apiRef.current=null; setJoined(false); setState({ message }); };
     async function start() {
       timer = setTimeout(() => { fail("O servidor de vídeo não respondeu. Tente novamente."); controller.abort(); },30_000);
       try {
@@ -61,10 +63,10 @@ export function Classroom({ joinUrl, backHref }: { joinUrl: string; backHref: st
         api.addListener("participantJoined",()=>materialMessage.current?.(JSON.stringify({t:"lessonara-pdf-request"})));
         setState({ message: "Conectando à sala…", active: true });
         let myId: string | undefined;
-        api.addListener("videoConferenceJoined", ({ id }) => { clearTimeout(timer); myId = id; api?.executeCommand("localSubject", data.lesson.title);materialMessage.current?.(JSON.stringify({t:"lessonara-pdf-request"}));broadcast(JSON.stringify({t:"lessonara-pdf-request"})); });
+        api.addListener("videoConferenceJoined", ({ id }) => { clearTimeout(timer); myId = id;setJoined(true); api?.executeCommand("localSubject", data.lesson.title);materialMessage.current?.(JSON.stringify({t:"lessonara-pdf-request"}));broadcast(JSON.stringify({t:"lessonara-pdf-request"})); });
         api.addListener("errorOccurred", ({ error, isFatal }) => { if (isFatal || error?.isFatal) fail("Não foi possível conectar à videochamada. Tente novamente."); });
-        api.addListener("screenSharingStatusChanged", ({ on }) => { if (on && myId) api?.pinParticipant(`${myId}-v1`); });
-        api.addListener("readyToClose", () => { clearTimeout(timer); api?.dispose(); api = null; apiRef.current=null; if (!controller.signal.aborted) setState({ message: "Você saiu da aula.", left: true }); });
+        api.addListener("screenSharingStatusChanged", ({ on }) => { if(!on)window.lessonaraDesktop?.captureStopped?.();if (on && myId && !window.lessonaraDesktop) api?.pinParticipant(`${myId}-v1`); });
+        api.addListener("readyToClose", () => { clearTimeout(timer); api?.dispose(); api = null; apiRef.current=null; if (!controller.signal.aborted) {setJoined(false);setState({ message: "Você saiu da aula.", left: true });} });
         // Pré-entrada pode permanecer aberta enquanto a pessoa escolhe seus dispositivos.
         timer = setTimeout(() => { if (!container.current?.querySelector("iframe")) fail("O servidor de vídeo não respondeu."); }, 30_000);
       } catch { fail("Não foi possível carregar a sala. Verifique sua conexão e tente novamente."); }
@@ -72,5 +74,6 @@ export function Classroom({ joinUrl, backHref }: { joinUrl: string; backHref: st
     void start();
     return () => { controller.abort(); clearTimeout(timer); api?.dispose();apiRef.current=null; script?.remove(); };
   }, [joinUrl, attempt,broadcast]);
-  return <main className={`classroom-screen ${pdfOpen&&state.active?"pdf-presenting":""}`}>{state.active&&<ClassroomPdf endpoint={joinUrl.replace(/\/join$/,"/material")} teacher={role==="teacher"} connected={materialConnected} messageRef={materialMessage} broadcast={broadcast} onOpen={setPdfOpen}/>}<div ref={container} className="classroom-video" hidden={!state.active} />{!state.active && <section className="classroom-state" role="status">{state.loading ? <p className="flex items-center justify-center gap-3"><span className="action-spinner" aria-hidden="true"/>{state.message}</p> : <h1>{state.message}</h1>}{state.window && <p>{state.window}</p>}{!state.loading && <div className="flex flex-wrap justify-center gap-3"><button className="btn" onClick={() => { setState({ message: "Preparando sua aula…", loading:true }); setAttempt(a => a + 1); }}>{state.left ? "Entrar novamente" : "Tentar novamente"}</button><Link className="btn-ghost" href={backHref}>Voltar ao meu espaço</Link></div>}</section>}</main>;
+  useEffect(()=>{if(!joined)return;apiRef.current?.executeCommand("setTileView",compact);},[compact,joined]);
+  return <main className={`classroom-screen ${pdfOpen&&state.active?"pdf-presenting":""} ${compact?"desktop-compact":""}`}><DesktopCallControls joined={joined} teacher={role==="teacher"} onCompact={setCompact}/>{state.active&&<ClassroomPdf endpoint={joinUrl.replace(/\/join$/,"/material")} teacher={role==="teacher"} connected={materialConnected} messageRef={materialMessage} broadcast={broadcast} onOpen={setPdfOpen}/>}<div ref={container} className="classroom-video" hidden={!state.active} />{!state.active && <section className="classroom-state" role="status">{state.loading ? <p className="flex items-center justify-center gap-3"><span className="action-spinner" aria-hidden="true"/>{state.message}</p> : <h1>{state.message}</h1>}{state.window && <p>{state.window}</p>}{!state.loading && <div className="flex flex-wrap justify-center gap-3"><button className="btn" onClick={() => { setState({ message: "Preparando sua aula…", loading:true }); setAttempt(a => a + 1); }}>{state.left ? "Entrar novamente" : "Tentar novamente"}</button><Link className="btn-ghost" href={backHref}>Voltar ao meu espaço</Link></div>}</section>}</main>;
 }

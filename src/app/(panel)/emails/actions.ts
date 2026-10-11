@@ -1,5 +1,6 @@
 "use server";
 import {requirePlatformFeature} from "@/lib/platform-plan-server";
+import {after} from "next/server";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createAdminClient, requireUser } from "@/lib/supabase/server";
@@ -26,4 +27,9 @@ export async function retryPendingEmails() {
   if (error) throw new Error("Não foi possível consultar os envios pendentes.");
   for (const job of data ?? []) await processEmails(job.id);
   revalidatePath("/emails");
+}
+
+export async function sendCampaign(input:unknown):Promise<{ok:true;count:number}|{ok:false;message:string}>{
+ const {supabase,userId}=await requirePlatformFeature('emails');
+ try{const {validateCampaign}=await import('@/lib/mail/campaign');const {seal}=await import('@/lib/mail/crypto');const value=validateCampaign(input);const result=await supabase.rpc('queue_email_campaign',{p_id:value.id,p_subject:value.subject,p_content:seal({subject:value.subject,message:value.message}),p_students:value.students});if(result.error)throw new Error(result.error.code==='P0001'?result.error.message:'Não foi possível registrar a campanha.');after(async()=>{const db=createAdminClient();const jobs=await db.from('email_outbox').select('id').eq('teacher_id',userId).like('event_key',`campaign/${value.id}/%`).eq('status','pending').limit(100);for(const job of jobs.data??[]){try{await processEmails(job.id);}catch{}await new Promise(resolve=>setTimeout(resolve,550));}});revalidatePath('/emails');return {ok:true,count:Number(result.data)};}catch(error){return {ok:false,message:error instanceof Error?error.message:'Não foi possível registrar a campanha.'};}
 }

@@ -4,10 +4,10 @@ import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/server";
 import { EmailSendError, sendEmail, type EmailInput } from "@/lib/email";
 import { seal, unseal } from "./crypto";
-import { otpEmail, reminderEmail, welcomeEmail } from "./templates";
+import { otpEmail, reminderEmail, welcomeEmail, campaignEmail } from "./templates";
 
-type MailStudent = { id:string;access_version:number;teacher_id:string;slug:string;name: string; email: string; active: boolean; teachers: { name: string; email: string } };
-type Job = { id: string; event_key: string; lease_id: string; student_id: string | null; recipient: string; template: "otp" | "welcome" | "reminder"; payload: Record<string, string>; attempts: number; delivery: { sealed: string } | null; expires_at: string };
+type MailStudent = { id:string;access_version:number;teacher_id:string;slug:string;name: string; email: string; active: boolean; promotional_email_opt_out:boolean; teachers: { name: string; email: string } };
+type Job = { id: string; event_key: string; lease_id: string; student_id: string | null; recipient: string; template: "otp" | "welcome" | "reminder" | "campaign"; payload: Record<string, string>; attempts: number; delivery: { sealed: string } | null; expires_at: string };
 
 export async function enqueueOtp(email: string, code: string, challengeId: string,studentId?:string) {
   const db = createAdminClient();
@@ -35,15 +35,15 @@ export async function processEmails(id?: string) {
       if (error) throw new Error("Não foi possível atualizar o estado do email.");
     }
     try {
-      if(job.template==="reminder"){const owner=await db.from("students").select("teacher_id").eq("id",job.student_id).maybeSingle();if(owner.error)throw owner.error;if(!owner.data||!(await loadTeacherPlan(owner.data.teacher_id,db)).emails){await finish({status:"cancelled",payload:{},delivery:null});result.cancelled++;continue;}}
+      if(job.template==="reminder"||job.template==="campaign"){const owner=await db.from("students").select("teacher_id").eq("id",job.student_id).maybeSingle();if(owner.error)throw owner.error;if(!owner.data||!(await loadTeacherPlan(owner.data.teacher_id,db)).emails){await finish({status:"cancelled",payload:{},delivery:null});result.cancelled++;continue;}}
       let body: EmailInput;
       // Revalida o destinatário mesmo no retry de um email já materializado.
       let student: MailStudent | null = null;
       if (job.student_id) {
-        const row = await db.from("students").select("id,access_version,teacher_id,slug,name,email,active,teachers(name,email)").eq("id", job.student_id).maybeSingle<MailStudent>();
+        const row = await db.from("students").select("id,access_version,teacher_id,slug,name,email,active,promotional_email_opt_out,teachers(name,email)").eq("id", job.student_id).maybeSingle<MailStudent>();
         if (row.error) throw new EmailSendError("database_unavailable", true);
         student = row.data;
-        if (!student || !student.active || student.email?.trim().toLowerCase() !== job.recipient) {
+        if (!student || !student.active || (job.template==="campaign"&&student.promotional_email_opt_out) || student.email?.trim().toLowerCase() !== job.recipient) {
           await finish({ status: "cancelled", payload: {}, delivery: null }); result.cancelled++; continue;
         }
       }
@@ -57,6 +57,7 @@ export async function processEmails(id?: string) {
       else {
         const content = job.template === "otp" ? otpEmail(unseal<{ code: string }>(job.payload.sealed).code)
           : job.template === "welcome" ? welcomeEmail(student!.name, student!.teachers.name,student!.teacher_id,student!.slug,await createWelcomeInvite(student!))
+          : job.template === "campaign" ? (()=>{const content=unseal<{subject:string;message:string}>(job.payload.sealed);const origin=process.env.APP_URL||`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;const token=seal({studentId:student!.id,teacherId:student!.teacher_id,email:student!.email});return campaignEmail(student!.name,student!.teachers.name,content.subject,content.message,new URL(`/emails/unsubscribe?token=${encodeURIComponent(token)}`,origin).href);})()
           : reminderEmail(student!.name, student!.teachers.name, job.payload.message,student!.teacher_id,student!.slug);
         body = { ...content, to: job.recipient, from: process.env.EMAIL_FROM || "Lessonara <onboarding@resend.dev>", ...(student?.teachers.email && !/\.(test|invalid|localhost)$/i.test(student.teachers.email) ? { replyTo: student.teachers.email } : process.env.EMAIL_REPLY_TO ? { replyTo: process.env.EMAIL_REPLY_TO } : {}) };
         // Corpo/remetente imutáveis para retries com a mesma chave do Resend.

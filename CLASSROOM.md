@@ -45,3 +45,12 @@ Testes de unidade cobrem janela, ocorrência, identidade da sala, papéis, aula 
 ## Plano Pro e desktop
 
 A página, o endpoint de entrada e o endpoint de material verificam o plano da empresa proprietária da turma. Emails e sala integrada são recursos Pro. O professor pode escolher navegador ou app; o aluno continua no navegador. O link nativo transporta somente a identidade da ocorrência, e o app autentica seu próprio usuário. Ver `desktop/README.md` para empacotamento e limites desta versão.
+
+
+## Desktop 0.2.0 focado em chamadas
+
+`/calls` exibe login e lista de aulas sem a navegação do portal. O app abre somente essa rota e ocorrências validadas; os links do portal abrem no navegador. O destino de login é limitado a `/calls` ou `/`, sem redirecionamento externo.
+
+O seletor nativo do aplicativo lista monitores inteiros e janelas, com miniaturas, e só concede a fonte explicitamente selecionada. Cancelar, mudar de sala ou fechar o seletor nega a captura. Não altera permissões do macOS.
+
+Minimizar uma chamada ativa transforma a mesma janela em uma janela pequena flutuante; não reinicia o Jitsi. O Dock e Voltar à sala restauram suas dimensões. Caneta, laser e texto desenham na sobreposição do monitor compartilhado. Esc ou × devolve os cliques ao aplicativo abaixo; interromper a captura limpa os desenhos. Compartilhar uma janela não captura a sobreposição e deixa esses controles desabilitados. O PDF/quadro interno mantém o transporte anterior; não houve rollback.
