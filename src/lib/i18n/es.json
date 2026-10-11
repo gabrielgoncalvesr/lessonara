@@ -976,5 +976,9 @@
   "Na primeira vez, abra o app e entre com sua conta de professor.": "La primera vez, abre la aplicación e inicia sesión con tu cuenta de profesor.",
   "Por arquivo": "Por archivo",
   "Sala de aula no Pro": "Aula virtual en Pro",
-  "Sala de aula no navegador e no app": "Aula virtual en el navegador y la aplicación"
+  "Sala de aula no navegador e no app": "Aula virtual en el navegador y la aplicación",
+  "Documentos do aluno": "Documentos del alumno",
+  "Adicione um documento para compartilhar com este aluno.": "Añade un documento para compartir con este alumno.",
+  "A área de Documentos ainda não está disponível. Conclua a configuração do armazenamento para ativar os envios.": "El área de Documentos aún no está disponible. Completa la configuración del almacenamiento para habilitar las subidas.",
+  "A área de Documentos está em preparação. Os materiais poderão ser compartilhados assim que ela estiver disponível.": "El área de Documentos está en preparación. Los materiales se podrán compartir cuando esté disponible."
 }

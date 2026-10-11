@@ -88,7 +88,7 @@ async function StudentContent({ params }: Pick<PageProps<"/students/[id]">, "par
             </section>
 
             <section className="card">
-              <h2 className="h2">{t("Hist\u00F3rico")}</h2>
+              <h2 className="h2">{t("Aulas por mês e pacote")}</h2>
               <LessonHistory lessons={lessons} today={today} packages={packages} actions={Object.fromEntries(lessons.map(l=>[`${l.date}-${l.time}-${l.status}`,lessonActions(l)]))}/>
             </section>
           </div>} pacotes={<section id="pagamentos" className="card space-y-3 scroll-mt-6">

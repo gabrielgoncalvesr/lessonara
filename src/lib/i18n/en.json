@@ -976,5 +976,9 @@
   "Histórico de envios": "Delivery history",
   "Envie uma vez e reutilize com vários alunos. Até {value0} por arquivo.": "Upload once and reuse with several students. Up to {value0} per file.",
   "Exercício feito · até {value0}": "Completed exercise · up to {value0}",
-  "SEUS DOCUMENTOS, ORGANIZADOS": "YOUR DOCUMENTS, ORGANIZED"
+  "SEUS DOCUMENTOS, ORGANIZADOS": "YOUR DOCUMENTS, ORGANIZED",
+  "Documentos do aluno": "Student documents",
+  "Adicione um documento para compartilhar com este aluno.": "Add a document to share with this student.",
+  "A área de Documentos ainda não está disponível. Conclua a configuração do armazenamento para ativar os envios.": "Documents is not available yet. Complete storage setup to enable uploads.",
+  "A área de Documentos está em preparação. Os materiais poderão ser compartilhados assim que ela estiver disponível.": "Documents is being prepared. Materials can be shared once it is available."
 }
