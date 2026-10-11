@@ -5,8 +5,11 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {files:["desktop/**/*.cjs"],rules:{"@typescript-eslint/no-require-imports":"off"}},
   // Override default ignores of eslint-config-next.
   globalIgnores([
+    "desktop/out/**",
+    "desktop/node_modules/**",
     "public/pdf-assets/**",
     "public/pdf.worker.min.mjs",
     // Default ignores of eslint-config-next:

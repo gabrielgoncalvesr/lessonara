@@ -1,4 +1,5 @@
 "use client";
+import {hasPlatformFeature,type PlatformPlan} from "@/lib/platform-plans";
 import {useI18n} from "@/components/browser-preferences-provider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,19 +18,20 @@ const links: {
     { href: "/emails", label: "Emails", icon: "book" },
     { href: "/settings", label: "Configurações", icon: "settings" },
 ];
-export function PanelNav() {
+export function PanelNav({platformPlan="essential"}:{platformPlan?:PlatformPlan}) {
     const pathname = usePathname();
-    return <NavLinks pathname={pathname}/>;
+    return <NavLinks pathname={pathname} platformPlan={platformPlan}/>;
 }
 export function PanelNavFallback() {
     return <NavLinks />;
 }
-function NavLinks({ pathname }: {
+function NavLinks({ pathname,platformPlan="essential" }: {
+    platformPlan?:PlatformPlan;
     pathname?: string;
 }) {
     const { t } = useI18n();
     return <nav className="panel-nav" aria-label={t("Navega\u00E7\u00E3o principal")}>{links.map(({ href, label, icon }) => {
             const active = pathname !== undefined && (href === "/students" ? pathname === "/students" || pathname.startsWith("/students/") : pathname === href);
-            return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`nav-link ${active ? "nav-active" : ""}`}><Icon name={icon}/><span>{t(label)}</span>{active && <span className="nav-dot"/>}</Link>;
+            return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`nav-link ${active ? "nav-active" : ""}`}><Icon name={icon}/><span>{t(label)}</span>{href==="/emails"&&!hasPlatformFeature(platformPlan,"emails")&&<span className="count-badge">Pro</span>}{active && <span className="nav-dot"/>}</Link>;
         })}</nav>;
 }

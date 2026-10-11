@@ -41,3 +41,7 @@ A mídia depende da rede: o túnel Cloudflare transporta o acesso web, não a m�
 ## Validação
 
 Testes de unidade cobrem janela, ocorrência, identidade da sala, papéis, aula atual e bloqueios. A QA HTTP usa contas temporárias isoladas, com sessões reais de professor/aluno, e remove esses registros ao terminar. A QA XMPP usa tokens emitidos pelo endpoint do Lessonara contra o Prosody real.
+
+## Plano Pro e desktop
+
+A página, o endpoint de entrada e o endpoint de material verificam o plano da empresa proprietária da turma. Emails e sala integrada são recursos Pro. O professor pode escolher navegador ou app; o aluno continua no navegador. O link nativo transporta somente a identidade da ocorrência, e o app autentica seu próprio usuário. Ver `desktop/README.md` para empacotamento e limites desta versão.

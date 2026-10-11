@@ -1,4 +1,6 @@
 "use client";
+import {usePlatformPlan} from "./platform-plan-provider";
+import {formatFileSize as uploadSize} from "@/lib/document-rules";
 import {Toast} from "./toast";
 import {Icon} from "@/components/icon";
 
@@ -15,6 +17,7 @@ export function StudentActivityUpload({ slug, activityId, incomplete }: {
     incomplete: boolean;
 }) {
     const { t } = useI18n();
+    const plan=usePlatformPlan();
     const [pending, startTransition] = useTransition();
     const [message, setMessage] = useState("");
     function send(event: FormEvent<HTMLFormElement>) {
@@ -24,7 +27,7 @@ export function StudentActivityUpload({ slug, activityId, incomplete }: {
         if (!(file instanceof File))
             return;
         try {
-            validateDocumentFile(file.name, file.size);
+            validateDocumentFile(file.name, file.size,plan.maxFileBytes);
         }
         catch (error) {
             setMessage((error as Error).message);
@@ -66,5 +69,5 @@ export function StudentActivityUpload({ slug, activityId, incomplete }: {
                 catch {
                     setMessage("Não foi possível descartar o envio.");
                 }
-            })}><Icon name="trash" className="h-4 w-4"/><BusyContent pending={pending}>{t("Descartar envio incompleto")}</BusyContent></button></> : <form onSubmit={send} className="space-y-3"><div><label className="label" htmlFor={`submission-file-${activityId}`}>{t("Exerc\u00EDcio feito \u00B7 at\u00E9 20 MB")}</label><input id={`submission-file-${activityId}`} name="file" className="input" type="file" accept={DOCUMENT_ACCEPT} required disabled={pending}/></div><div><label className="label" htmlFor={`submission-note-${activityId}`}>{t("Observa\u00E7\u00F5es da entrega (opcional)")}</label><textarea id={`submission-note-${activityId}`} name="note" className="input" maxLength={4000} rows={2} disabled={pending}/></div><button className="btn" disabled={pending}><BusyContent pending={pending}>{pending ? t("Enviando atividade\u2026") : t("Entregar atividade")}</BusyContent></button>{pending && <progress className="document-upload-progress" aria-label={t("Enviando atividade")}/>}<p className="text-[11px] text-muted">{t("Confira o arquivo antes de entregar. Uma entrega por atividade.")}</p></form>}{message && <Toast message={t(message)}/>}</div>;
+            })}><Icon name="trash" className="h-4 w-4"/><BusyContent pending={pending}>{t("Descartar envio incompleto")}</BusyContent></button></> : <form onSubmit={send} className="space-y-3"><div><label className="label" htmlFor={`submission-file-${activityId}`}>{t("Exercício feito · até {value0}",{value0:uploadSize(plan.maxFileBytes)})}</label><input id={`submission-file-${activityId}`} name="file" className="input" type="file" accept={DOCUMENT_ACCEPT} required disabled={pending}/></div><div><label className="label" htmlFor={`submission-note-${activityId}`}>{t("Observa\u00E7\u00F5es da entrega (opcional)")}</label><textarea id={`submission-note-${activityId}`} name="note" className="input" maxLength={4000} rows={2} disabled={pending}/></div><button className="btn" disabled={pending}><BusyContent pending={pending}>{pending ? t("Enviando atividade\u2026") : t("Entregar atividade")}</BusyContent></button>{pending && <progress className="document-upload-progress" aria-label={t("Enviando atividade")}/>}<p className="text-[11px] text-muted">{t("Confira o arquivo antes de entregar. Uma entrega por atividade.")}</p></form>}{message && <Toast message={t(message)}/>}</div>;
 }

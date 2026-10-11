@@ -1,4 +1,5 @@
 "use server";
+import {loadTeacherPlan} from "@/lib/platform-plan-server";
 import {requireConfiguredTeacher} from "@/lib/onboarding";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
@@ -14,7 +15,7 @@ export async function assignActivity(input:{studentId:string;documentId:string;t
  const {supabase,userId}=await requireConfiguredTeacher();let dueOn:string|null;
  try{validDocumentText(input.title,"");dueOn=validExpiry(input.dueOn,nowInTZ().today);if(input.instructions.length>4000)throw new Error("Use instruções de até 4.000 caracteres.");}catch(error){return fail((error as Error).message);}
  const student=await supabase.from("students").select("id,slug").eq("id",input.studentId).eq("teacher_id",userId).maybeSingle();if(student.error||!student.data)return fail("Aluno não encontrado.");
- if(input.documentId){const document=await supabase.from("documents").select("id").eq("id",input.documentId).eq("teacher_id",userId).eq("status","ready").maybeSingle();if(document.error||!document.data)return fail("Documento não encontrado na sua biblioteca.");}
+ if(input.documentId){const document=await supabase.from("documents").select("id").eq("id",input.documentId).eq("teacher_id",userId).eq("status","ready").maybeSingle();if(document.error||!document.data)return fail("Documento não encontrado na sua área de Documentos.");}
  const {error}=await supabase.from("activities").insert({teacher_id:userId,student_id:input.studentId,document_id:input.documentId||null,title:input.title.trim(),instructions:input.instructions.trim(),due_on:dueOn});if(error)return fail("Não foi possível enviar a atividade.");refresh(input.studentId,student.data.slug);return {ok:true,data:undefined};
 }
 export async function reviewActivity(id:string,feedback:string,documentId=""):Promise<Result>{
@@ -29,8 +30,8 @@ export async function archiveActivity(id:string,archive:boolean):Promise<Result>
  const {supabase,userId}=await requireUser();const {data,error}=await supabase.from("activities").update({archived_at:archive?new Date().toISOString():null}).eq("id",id).eq("teacher_id",userId).select("student_id,students(slug)").maybeSingle<{student_id:string;students:{slug:string}}>();if(error||!data)return fail("Não foi possível atualizar a atividade.");refresh(data.student_id,data.students.slug);return {ok:true,data:undefined};
 }
 export async function beginActivitySubmission(slug:string,activityId:string,input:{fileName:string;byteSize:number}):Promise<Result<{id:string;path:string;token:string;mimeType:string}>>{
- let file;try{file=validateDocumentFile(input.fileName,input.byteSize);}catch(error){return fail((error as Error).message);}
  const supabase=createAdminClient();const activity=await studentActivity(supabase,slug,activityId);if(!activity||activity.archived_at)return fail("Atividade indisponível para entrega.");
+ const plan=await loadTeacherPlan(activity.teacher_id,supabase);let file;try{file=validateDocumentFile(input.fileName,input.byteSize,plan.maxFileBytes);}catch(error){return fail((error as Error).message);}
  const id=randomUUID();const path=`${activity.teacher_id}/${id}/file.${file.extension}`;
  const reserved=await supabase.rpc("reserve_activity_submission",{p_id:id,p_activity_id:activity.id,p_teacher_id:activity.teacher_id,p_student_id:activity.student_id,p_file_name:input.fileName,p_storage_path:path,p_mime_type:file.mimeType,p_byte_size:input.byteSize});
  if(reserved.error)return fail(reserved.error.code==="23505"?"Já existe uma entrega ou envio incompleto nesta atividade.":reserved.error.message.includes("armazenamento")?"O espaço de arquivos da professora está cheio. Avise sua professora.":"Não foi possível preparar a entrega.");

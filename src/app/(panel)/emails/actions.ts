@@ -1,4 +1,5 @@
 "use server";
+import {requirePlatformFeature} from "@/lib/platform-plan-server";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createAdminClient, requireUser } from "@/lib/supabase/server";
@@ -19,7 +20,7 @@ export async function resendWelcome(form: FormData) {
   revalidatePath("/emails");
 }
 export async function retryPendingEmails() {
-  const { userId } = await requireUser();
+  const { userId } = await requirePlatformFeature("emails");
   const db = createAdminClient();
   const { data, error } = await db.from("email_outbox").select("id").eq("teacher_id", userId).eq("status", "pending").lte("available_at", new Date().toISOString()).limit(10);
   if (error) throw new Error("Não foi possível consultar os envios pendentes.");

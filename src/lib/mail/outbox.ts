@@ -1,3 +1,4 @@
+import {loadTeacherPlan} from "../platform-plan-server";
 import {createWelcomeInvite} from "./welcome-invite";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -17,6 +18,7 @@ export async function enqueueOtp(email: string, code: string, challengeId: strin
 }
 
 export async function enqueueReminder(input: { studentId: string; teacherId: string; email: string; credits: number; message: string }) {
+  if(!(await loadTeacherPlan(input.teacherId)).emails)throw new Error("Emails está disponível no plano Pro.");
   const { error } = await createAdminClient().from("email_outbox").upsert({ event_key: `reminder/${input.studentId}/${input.credits}`, student_id: input.studentId, teacher_id: input.teacherId, recipient: input.email, template: "reminder", payload: { message: input.message } }, { onConflict: "event_key", ignoreDuplicates: true });
   if (error) throw new Error("Não foi possível registrar o lembrete.");
 }
@@ -33,6 +35,7 @@ export async function processEmails(id?: string) {
       if (error) throw new Error("Não foi possível atualizar o estado do email.");
     }
     try {
+      if(job.template==="reminder"){const owner=await db.from("students").select("teacher_id").eq("id",job.student_id).maybeSingle();if(owner.error)throw owner.error;if(!owner.data||!(await loadTeacherPlan(owner.data.teacher_id,db)).emails){await finish({status:"cancelled",payload:{},delivery:null});result.cancelled++;continue;}}
       let body: EmailInput;
       // Revalida o destinatário mesmo no retry de um email já materializado.
       let student: MailStudent | null = null;

@@ -44,3 +44,9 @@ next-env.d.ts
 # Generated PDF.js viewer assets
 /public/pdf.worker.min.mjs
 /public/pdf-assets/
+
+# Desktop build outputs
+/desktop/node_modules/
+/desktop/out/
+/desktop/Lessonara.iconset/
+/desktop/*.zip

@@ -1,3 +1,5 @@
+import {PlatformPlanProvider} from "./platform-plan-provider";
+import {platformPlan} from "@/lib/platform-plans";
 import {getJitsiConfig} from "@/lib/classroom-server";
 import { loadActivities } from "@/lib/activities";
 import { loadStudentShares } from "@/lib/documents";
@@ -15,9 +17,9 @@ export async function StudentContent({ params }: Pick<PageProps<"/student/portal
     if (!access)
         redirect("/student/login");
     const supabase = createAdminClient();
-    const { data: student, error } = await supabase.from("students").select("*, teachers(name)").eq("id", access.id).eq("teacher_id", access.teacher_id).maybeSingle<Student & {
+    const { data: student, error } = await supabase.from("students").select("*, teachers(name,platform_plan)").eq("id", access.id).eq("teacher_id", access.teacher_id).maybeSingle<Student & {
         teachers: {
-            name: string;
+            name: string;platform_plan:string;
         } | null;
     }>();
     if (error)
@@ -28,5 +30,6 @@ export async function StudentContent({ params }: Pick<PageProps<"/student/portal
     const [shared, assigned] = await Promise.all([loadStudentShares(supabase, student.id, student.teacher_id, today, false), loadActivities(supabase, student.teacher_id, student.id)]);
     const materials = shared.shares.map(({ id, title, subject, fileName, byteSize, expiresOn }) => ({ id, title, subject, fileName, byteSize, expiresOn }));
     const activities = assigned.activities.map(({ studentId, studentName, documentId, ...activity }) => { void studentId; void studentName; void documentId; return activity; });
-    return <StudentPortal classroomEnabled={Boolean(getJitsiConfig())} activities={activities} slug={student.id} materials={materials} name={student.name} teacherName={student.teachers?.name ?? ""} ledger={ledger} packages={packages} today={today} time={nowInTZ().time}/>;
+    const plan=platformPlan(student.teachers?.platform_plan);
+    return <PlatformPlanProvider plan={plan.id}><StudentPortal classroomEnabled={plan.classroom&&Boolean(getJitsiConfig())} meetEnabled={plan.classroom} activities={activities} slug={student.id} materials={materials} name={student.name} teacherName={student.teachers?.name ?? ""} ledger={ledger} packages={packages} today={today} time={nowInTZ().time}/></PlatformPlanProvider>;
 }

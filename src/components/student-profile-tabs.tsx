@@ -9,7 +9,7 @@ const tabs = [
     { id: "horarios", hash: "schedule", label: "Horários", icon: "clock" },
     { id: "dados", hash: "details", label: "Dados do aluno", icon: "users" },
     { id: "atividades", hash: "activities", label: "Atividades", icon: "check" },
-    { id: "materiais", hash: "materials", label: "Materiais", icon: "book" },
+    { id: "materiais", hash: "materials", label: "Documentos", icon: "book" },
 ] as const;
 type TabId = (typeof tabs)[number]["id"];
 const tabEvent = "lessonara-profile-tab";

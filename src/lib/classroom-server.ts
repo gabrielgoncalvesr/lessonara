@@ -1,4 +1,5 @@
 import "server-only";
+import {loadTeacherPlan} from "./platform-plan-server";
 import { authorizedStudent } from "./student-access";
 import { createAdminClient, createClient } from "./supabase/server";
 import { loadLedgers } from "./data";
@@ -40,5 +41,6 @@ export async function loadClassroomAccess(ref: ClassroomRef) {
   const lesson = ledger.lessons.find(l => l.sourceKind === ref.sourceKind && l.sourceId === ref.sourceId && l.date === ref.date);
   if (!lesson) return null;
   const backHref = participant.role === "teacher" ? `/students/${target.data.id}` : `/p/${target.data.teacher_id}/s/${encodeURIComponent(target.data.slug)}`;
-  return { participant, lesson, backHref };
+  const plan=await loadTeacherPlan(target.data.teacher_id,db);
+  return { participant, lesson, backHref,platformPlan:plan.id,roomAllowed:plan.classroom };
 }

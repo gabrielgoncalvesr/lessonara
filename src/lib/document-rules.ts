@@ -10,11 +10,11 @@ const MIME: Record<string, string> = {
   xls: "application/vnd.ms-excel", xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 };
 
-export function validateDocumentFile(fileName: string, byteSize: number) {
+export function validateDocumentFile(fileName: string, byteSize: number, maxBytes=MAX_DOCUMENT_BYTES) {
   if (!fileName || fileName.length > 180 || /[\x00-\x1f/\\]/.test(fileName)) throw new Error("Confira o nome do arquivo.");
   const extension = fileName.split(".").at(-1)?.toLowerCase() ?? "";
   if (!MIME[extension]) throw new Error("Use PDF, documentos, apresentações, planilhas, texto ou imagens JPG/PNG/WebP.");
-  if (!Number.isSafeInteger(byteSize) || byteSize < 1 || byteSize > MAX_DOCUMENT_BYTES) throw new Error("O arquivo precisa ter conteúdo e no máximo 20 MB.");
+  if (!Number.isSafeInteger(byteSize) || byteSize < 1 || byteSize > maxBytes) throw new Error(`O arquivo precisa ter conteúdo e no máximo ${formatFileSize(maxBytes)}.`);
   return { extension, mimeType: MIME[extension] };
 }
 
@@ -41,6 +41,7 @@ export function downloadLifetime(expiresOn: string | null, today: string, time: 
 export function formatFileSize(bytes: number) {
   if (bytes === 0) return "0 KB";
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  if(bytes>=1024*1024*1024)return `${(bytes/(1024*1024*1024)).toLocaleString("pt-BR",{maximumFractionDigits:1})} GB`;
   return `${(bytes / (1024 * 1024)).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} MB`;
 }
 

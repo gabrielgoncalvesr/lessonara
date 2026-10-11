@@ -1,4 +1,5 @@
 "use server";
+import {loadTeacherPlan} from "@/lib/platform-plan-server";
 import {requireConfiguredTeacher} from "@/lib/onboarding";
 
 import { randomUUID } from "node:crypto";
@@ -14,22 +15,24 @@ const refreshDocuments = () => revalidatePath("/", "layout");
 
 export async function beginDocumentUpload(input: { title: string; subject: string; fileName: string; byteSize: number }): Promise<Result<{ id: string; path: string; token: string; mimeType: string }>> {
   const { supabase, userId } = await requireConfiguredTeacher();
+  const plan=await loadTeacherPlan(userId,supabase);
   let details;
   let file;
-  try { details = validDocumentText(input.title, input.subject); file = validateDocumentFile(input.fileName, input.byteSize); }
+  try { details = validDocumentText(input.title, input.subject); file = validateDocumentFile(input.fileName, input.byteSize,plan.maxFileBytes); }
   catch (error) { return failure((error as Error).message); }
   const id = randomUUID();
   const path = `${userId}/${id}/file.${file.extension}`;
   const { error } = await supabase.rpc("reserve_document_upload", { p_id: id, p_title: details.title, p_subject: details.subject, p_file_name: input.fileName, p_storage_path: path, p_mime_type: file.mimeType, p_byte_size: input.byteSize });
   if (error) {
-    if (documentsSetupMissing(error)) return failure("A biblioteca ainda não está disponível. Conclua a configuração do armazenamento.");
-    if (error.code === "P0001" && error.message.includes("armazenamento")) return failure("O espaço da biblioteca está cheio. Remova arquivos que não utiliza antes de enviar outro.");
+    if (documentsSetupMissing(error)) return failure("A área de Documentos ainda não está disponível. Conclua a configuração do armazenamento.");
+    if(error.code==="P0001"&&error.message.includes("limite do plano"))return failure(error.message);
+    if (error.code === "P0001" && error.message.includes("armazenamento")) return failure("O espaço de Documentos está cheio. Remova arquivos que não utiliza antes de enviar outro.");
     return failure("Não foi possível preparar o envio do arquivo.");
   }
   const signed = await supabase.storage.from(DOCUMENT_BUCKET).createSignedUploadUrl(path);
   if (signed.error || !signed.data) {
     await supabase.from("documents").delete().eq("id", id).eq("teacher_id", userId).eq("status", "uploading");
-    return failure("Não foi possível preparar o armazenamento. Confira a configuração da biblioteca.");
+    return failure("Não foi possível preparar o armazenamento. Confira a configuração de Documentos.");
   }
   return { ok: true, data: { id, path, token: signed.data.token, mimeType: file.mimeType } };
 }
@@ -37,11 +40,11 @@ export async function beginDocumentUpload(input: { title: string; subject: strin
 export async function finishDocumentUpload(id: string): Promise<Result> {
   const { supabase, userId } = await requireUser();
   const { data: document, error } = await supabase.from("documents").select("*").eq("id", id).eq("teacher_id", userId).maybeSingle<DocumentRecord>();
-  if (error || !document || document.status !== "uploading") return failure("Envio não encontrado ou já concluído. Atualize a biblioteca.");
+  if (error || !document || document.status !== "uploading") return failure("Envio não encontrado ou já concluído. Atualize a área de Documentos.");
   const info = await supabase.storage.from(DOCUMENT_BUCKET).info(document.storage_path);
   if (info.error || !info.data || info.data.size !== document.byte_size || info.data.contentType !== document.mime_type) return failure("Não foi possível confirmar o tamanho e o tipo do arquivo enviado.");
   const updated = await supabase.from("documents").update({ status: "ready" }).eq("id", id).eq("teacher_id", userId).eq("status", "uploading").select("id").maybeSingle();
-  if (updated.error || !updated.data) return failure("Não foi possível concluir o envio. Atualize a biblioteca.");
+  if (updated.error || !updated.data) return failure("Não foi possível concluir o envio. Atualize a área de Documentos.");
   refreshDocuments();
   return { ok: true, data: undefined };
 }
@@ -50,9 +53,9 @@ export async function removeLibraryDocument(id: string, incompleteOnly = false):
   const { supabase, userId } = await requireUser();
   const { data: document, error } = await supabase.from("documents").select("*").eq("id", id).eq("teacher_id", userId).maybeSingle<DocumentRecord>();
   if (error || !document) return failure("Documento não encontrado.");
-  if (incompleteOnly && document.status === "ready") return failure("O arquivo já está na biblioteca.");
+  if (incompleteOnly && document.status === "ready") return failure("O arquivo já está em Documentos.");
   const locked = await supabase.from("documents").update({ status: "deleting" }).eq("id", id).eq("teacher_id", userId).eq("status", document.status).select("id").maybeSingle();
-  if (locked.error || !locked.data) return failure("O documento mudou. Atualize a biblioteca antes de remover.");
+  if (locked.error || !locked.data) return failure("O documento mudou. Atualize a área de Documentos antes de remover.");
   const removed = await supabase.storage.from(DOCUMENT_BUCKET).remove([document.storage_path]);
   if (removed.error) {
     await supabase.from("documents").update({ status: document.status }).eq("id", id).eq("teacher_id", userId).eq("status", "deleting");

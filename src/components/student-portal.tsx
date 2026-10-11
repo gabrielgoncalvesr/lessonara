@@ -15,9 +15,9 @@ import { LessonCalendar } from "./lesson-calendar";
 import { calendarRange } from "@/lib/calendar";
 import { formatDate, formatDateLong } from "@/lib/dates";
 import type { Ledger, Package } from "@/lib/ledger";
-const tabs = [{ id: "resumo", label: "Meu resumo", icon: "grid" as const }, { id: "calendario", label: "Calendário", icon: "calendar" as const }, { id: "materiais", label: "Materiais", icon: "book" as const }, { id: "atividades", label: "Atividades", icon: "check" as const }, { id: "historico", label: "Histórico e pacotes", icon: "book" as const }];
-export function StudentPortal({ classroomEnabled = false, name, teacherName, ledger, packages, today, time, slug, materials, activities }: {
-    classroomEnabled?: boolean;
+const tabs = [{ id: "resumo", label: "Meu resumo", icon: "grid" as const }, { id: "calendario", label: "Calendário", icon: "calendar" as const }, { id: "materiais", label: "Documentos", icon: "book" as const }, { id: "atividades", label: "Atividades", icon: "check" as const }, { id: "historico", label: "Histórico e pacotes", icon: "book" as const }];
+export function StudentPortal({ classroomEnabled = false, meetEnabled=false,name, teacherName, ledger, packages, today, time, slug, materials, activities }: {
+    classroomEnabled?: boolean;meetEnabled?:boolean;
     name: string;
     teacherName: string;
     ledger: Ledger;
@@ -34,8 +34,7 @@ export function StudentPortal({ classroomEnabled = false, name, teacherName, led
     const [roomNow,setRoomNow] = useState(() => Date.parse(`${today}T${time}:00-03:00`));
     useEffect(() => {const timer=setInterval(()=>setRoomNow(Date.now()),30_000);return ()=>clearInterval(timer);},[]);
     const next = nextJoinableLesson(ledger.lessons,roomNow);
-    const entryHref = next ? classroomEnabled ? classroomHref(slug,next) : next.meetUrl : null;
-    const history = ledger.lessons.filter((lesson) => lesson.past).slice().reverse();
+    const entryHref = next ? classroomEnabled ? classroomHref(slug,next) : meetEnabled?next.meetUrl:null : null;
     const range = calendarRange(today);
     const progress = ledger.credits > 0 ? Math.min(100, Math.round(ledger.used / ledger.credits * 100)) : 0;
     function tabKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -52,6 +51,6 @@ export function StudentPortal({ classroomEnabled = false, name, teacherName, led
       {tab === "calendario" && <div id="panel-calendario" role="tabpanel" aria-labelledby="tab-calendario"><LessonCalendar today={today} time={time} {...range} lessons={ledger.lessons.filter((lesson) => lesson.date >= range.startDate && lesson.date <= range.endDate).map((lesson, index) => ({ id: String(index), date: lesson.date, time: lesson.time, durationMinutes:lesson.durationMinutes,status: lesson.status, name: teacherName ? `Aula com ${teacherName}` : "Sua aula", note: lesson.holidayName ? `${lesson.holidayName} · ${lesson.counts ? "conta no pacote" : "crédito mantido"}` : lesson.event?.note }))}/></div>}
       {tab === "materiais" && <div id="panel-materiais" role="tabpanel" aria-labelledby="tab-materiais"><StudentMaterials materials={materials} slug={slug} today={today}/></div>}
       {tab === "atividades" && <div id="panel-atividades" role="tabpanel" aria-labelledby="tab-atividades"><StudentActivities activities={activities} slug={slug} today={today}/></div>}
-      {tab === "historico" && <div id="panel-historico" role="tabpanel" aria-labelledby="tab-historico" className="portal-history-grid"><section className="card"><h2 className="h2">{t("Aulas anteriores")}</h2><LessonHistory lessons={history} packages={packages}/></section><section className="card"><h2 className="h2">{t("Meus pacotes")}</h2>{packages.length ? <ul className="portal-packages">{packages.slice().sort((a, b) => b.paid_on.localeCompare(a.paid_on)).map((pack) => <li key={pack.id}><span className="stat-icon"><Icon name="book" className="h-4 w-4"/></span><div><p className="font-semibold">{pack.lessons}{t(" aulas")}</p><p className="mt-1 text-xs text-muted">{t("Pagamento registrado em ")}{formatDate(pack.paid_on, locale)}</p></div><Icon name="check" className="ml-auto h-4 w-4 text-ok"/></li>)}</ul> : <p className="text-sm text-muted">{t("Nenhum pacote registrado ainda.")}</p>}</section></div>}
+      {tab === "historico" && <div id="panel-historico" role="tabpanel" aria-labelledby="tab-historico" className="portal-history-grid"><section className="card"><h2 className="h2">{t("Aulas por mês e pacote")}</h2><LessonHistory lessons={ledger.lessons} today={today} packages={packages}/></section><section className="card"><h2 className="h2">{t("Meus pacotes")}</h2>{packages.length ? <ul className="portal-packages">{packages.slice().sort((a, b) => b.paid_on.localeCompare(a.paid_on)).map((pack) => <li key={pack.id}><span className="stat-icon"><Icon name="book" className="h-4 w-4"/></span><div><p className="font-semibold">{pack.lessons}{t(" aulas")}</p><p className="mt-1 text-xs text-muted">{t("Pagamento registrado em ")}{formatDate(pack.paid_on, locale)}</p></div><Icon name="check" className="ml-auto h-4 w-4 text-ok"/></li>)}</ul> : <p className="text-sm text-muted">{t("Nenhum pacote registrado ainda.")}</p>}</section></div>}
       <footer className="portal-footer"><p><b>{t("Falta:")}</b>{t(" aviso em cima da hora ou n\u00E3o compareceu; conta como aula. ")}<b>{t("Desmarcada:")}</b>{t(" avisada com anteced\u00EAncia; n\u00E3o conta.")}</p><span>{t("Seu aprendizado, um encontro de cada vez.")}</span></footer></main></div>);
 }

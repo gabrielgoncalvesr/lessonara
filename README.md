@@ -4,7 +4,7 @@ Controle de aulas e pacotes para professores particulares. A professora cadastra
 
 ## Regras
 
-- **Planos**: cada professor cria os seus (pacote de N aulas por um preço). Conta nova já vem com "1x por semana" (4 aulas, R$300) e "2x por semana" (8 aulas, R$500). Valor pode ter override por aluno.
+- **Planos**: cada professor cria os seus (pacote de N aulas por um preço). No primeiro acesso, o professor precisa salvar seu perfil e ativar um plano; sugestões não são ativadas automaticamente. Valor pode ter override por aluno.
 - **Pacote**: vale até ser usado; guarda aulas e valor do momento do pagamento.
 - **Agenda fixa**: aulas são geradas a partir do horário semanal. Aula que já passou conta como dada.
 - **Falta**: aviso em cima da hora ou não compareceu. Conta como aula.
@@ -72,7 +72,7 @@ curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/remi
 
 Envie pela aba Documentos e compartilhe no perfil do aluno. O portal autenticado oferece uma aba Materiais com os arquivos liberados. Cada aluno tem sua própria validade; compartilhar de novo atualiza o prazo sem duplicar o arquivo.
 
-O upload vai diretamente do navegador ao Supabase com uma autorização temporária; o arquivo não atravessa uma Server Action da Vercel. O limite é 20 MB por arquivo e a biblioteca reserva até 1 GB por professora, incluindo envios incompletos. A cota do plano Supabase é compartilhada pelo projeto. Remova envios incompletos para liberar a reserva.
+O upload vai diretamente do navegador ao Supabase com uma autorização temporária; o arquivo não atravessa uma Server Action da Vercel. Os limites seguem o plano da empresa, conforme a tabela abaixo; documentos e entregas compartilham a cota, incluindo envios incompletos. A cota do plano Supabase é compartilhada pelo projeto. Remova envios incompletos para liberar a reserva.
 
 Downloads exigem uma sessão da professora ou uma sessão do aluno vinculada ao perfil e um compartilhamento válido. O bucket é privado e as URLs assinadas duram no máximo 60 segundos. Excluir um documento remove todos os compartilhamentos; encerrar um acesso individual mantém o arquivo e os demais alunos. Um arquivo já baixado não pode ser revogado.
 
@@ -86,11 +86,11 @@ Os cadastros guardam telefone/WhatsApp opcional; a cobrança usa esse número co
 
 ## Atividades e entregas
 
-Rode `supabase/migrations/0006_activities.sql` para criar atividades, entregas e o bucket privado de devoluções. A professora envia pela aba Atividades ou pelo perfil do aluno, usando um arquivo da biblioteca ou somente instruções. O aluno recebe uma aba Atividades no seu link e pode devolver um arquivo de até 20 MB, com observações opcionais.
+Rode `supabase/migrations/0006_activities.sql` para criar atividades, entregas e o bucket privado de devoluções. A professora envia pela aba Atividades ou pelo perfil do aluno, usando um arquivo da biblioteca ou somente instruções. O aluno recebe uma aba Atividades no seu link e pode devolver um arquivo dentro do limite do plano do professor, com observações opcionais.
 
 Cada atividade aceita uma entrega concluída. Envios interrompidos podem ser descartados para tentar novamente. As datas de envio, entrega e conferência ficam registradas; o prazo inclui o dia escolhido no fuso de São Paulo. Entregas posteriores continuam permitidas e são sinalizadas. A professora registra comentários e marca como conferida; o aluno acompanha o retorno no mesmo local.
 
-Arquivar interrompe novas entregas e preserva a atividade. Remover o arquivo de uma entrega concluída libera espaço, mantendo datas e comentários. A biblioteca e as entregas compartilham a reserva de 1 GB por professora. A cota gratuita do provedor é compartilhada por todo o projeto. Os uploads passam diretamente pelo Storage com autorização temporária; nenhuma credencial administrativa vai ao navegador.
+Arquivar interrompe novas entregas e preserva a atividade. Remover o arquivo de uma entrega concluída libera espaço, mantendo datas e comentários. A biblioteca e as entregas compartilham a cota do plano da empresa. A cota gratuita do provedor é compartilhada por todo o projeto. Os uploads passam diretamente pelo Storage com autorização temporária; nenhuma credencial administrativa vai ao navegador.
 
 
 ## Acesso autenticado do aluno e emails centralizados
@@ -175,10 +175,32 @@ A migration 0015 remove os planos automáticos de contas novas. O professor prec
 
 A conta de teste pode ser colocada no fluxo inicial mantendo seus alunos e configurações existentes como sugestões. Um aluno ativo sem horário vigente ou data avulsa futura aparece como pendente; reposições têm uma aba própria.
 
-Meu plano apresenta Essencial, Profissional e Studio. Essencial inclui os recursos atuais nesta fase de lançamento; os outros dois são uma prévia sem cobrança ou contratação. O identificador do plano da plataforma não pode ser alterado pelo usuário através da API. Regras comerciais e cobrança ficam para a etapa de assinaturas.
+Plano da empresa apresenta Essencial, Plus e Pro. Emails e a sala integrada são exclusivos do Pro; login e convites dos alunos permanecem disponíveis em todos os planos. A implementação não cria cobranças ou contratações. O identificador do plano da plataforma não pode ser alterado pelo usuário através da API. Regras comerciais e cobrança ficam para a etapa de assinaturas.
 
 Veja [TASKS.md](TASKS.md) para a revisão completa de validação dos formulários.
 
 ## Sala online
 
 Veja [CLASSROOM.md](CLASSROOM.md) para a integração Jitsi, autenticação, configuração e limites de rede.
+
+## Assinaturas e limites — versão de teste
+
+Aplique `0016_platform_entitlements.sql` antes de publicar o código de planos. A coluna de plano continua protegida contra alterações pela própria conta.
+
+| Plano | Arquivo | Total de documentos e entregas | Emails e sala integrada |
+|---|---:|---:|---|
+| Essencial | 20 MB | 1 GB | Pro necessário |
+| Plus | 100 MB | 5 GB | Pro necessário |
+| Pro | 1 GB | 20 GB | Incluídos |
+
+As cotas são aplicadas nas ações e no banco, com reserva serializada e verificação do tamanho real antes de concluir um arquivo. O provedor de arquivos mantém seus próprios limites globais e capacidade física. Configurar estes planos não altera nem contrata o plano Supabase. Nenhuma cobrança automática foi implementada.
+
+O histórico por mês inclui programação e aulas anteriores. Por pacote, inclui aulas vinculadas ao pagamento e distingue utilizadas, agendadas e saldo; aulas futuras não contam como utilizadas.
+
+## App desktop de teste
+
+`desktop/` contém um app Electron para Mac Apple Silicon. Para desenvolvimento: `npm ci` e `npm test` nessa pasta. Empacote com `npm run package:mac`; a distribuição pública inicial é a release `desktop-v0.1.0`.
+
+O app possui sessão própria. Um link `lessonara://classroom/<student>/<kind>/<source>/<date>` leva à ocorrência no domínio canônico, sem senha ou JWT no link. No primeiro acesso, faça login no app. O acesso continua sendo autorizado pelo backend e exige Pro, vínculo e horário válidos. A troca de sala é manual; links para outras salas pedem confirmação antes de sair da atual. O aluno pode permanecer no navegador.
+
+Este teste usa as ferramentas atuais da sala. Não implementa overlay de anotação sobre outros programas nem reverte o quadro. Configure Google pelo navegador. A assinatura local ad-hoc não é notarização Apple; uma distribuição final exige preparar assinatura/notarização antes de recomendar o instalador a usuários finais.

@@ -13,6 +13,7 @@ export async function POST(request: Request, { params }: { params: Promise<Class
     if (!config) return json({ error: "Sala de aula indisponível." }, 503);
     const access = await loadClassroomAccess(ref);
     if (!access) return json({ error: "Entre no seu espaço para acessar esta aula." }, 403);
+    if(!access.roomAllowed)return json({error:"A sala de aula está disponível no plano Pro."},403);
     const result = authorizeClassroom({ ...access, ref, config });
     return json(result.body, result.status);
   } catch { return json({ error: "Não foi possível preparar a sala. Tente novamente." }, 503); }

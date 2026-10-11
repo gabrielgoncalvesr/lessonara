@@ -10,7 +10,7 @@ export async function POST(request: Request, { params }: { params: Promise<Class
   if(request.headers.get("origin")!==new URL(request.url).origin)return json({error:"Solicitação não permitida."},403);
   const ref=await params;if(!classroomRefValid(ref))return json({error:"Aula não encontrada."},404);
   try {
-    const access=await loadClassroomAccess(ref);if(!access||!lessonCanJoin(access.lesson))return json({error:"Acesso não permitido."},403);
+    const access=await loadClassroomAccess(ref);if(!access||!access.roomAllowed||!lessonCanJoin(access.lesson))return json({error:"Acesso não permitido."},403);
     const text=await request.text();if(text.length>150000)return json({error:"Material muito grande."},413);
     const input=JSON.parse(text);const db=createAdminClient();
     const owner=await db.from("students").select("teacher_id").eq("id",ref.studentId).single();if(owner.error)throw owner.error;

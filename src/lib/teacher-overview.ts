@@ -1,3 +1,4 @@
+import {loadTeacherPlan} from "./platform-plan-server";
 import {getJitsiConfig} from "./classroom-server";
 import {classroomHref} from "./classroom";
 import {needsSchedule} from "./student-setup";
@@ -9,7 +10,7 @@ import { requireUser } from "./supabase/server";
 
 export async function loadTeacherOverview(includeCalendar = false) {
   const { supabase, userId } = await requireUser();
-  const classroomsEnabled=Boolean(getJitsiConfig());
+  const classroomsEnabled=Boolean(getJitsiConfig())&&(await loadTeacherPlan(userId,supabase)).classroom;
   const teacherQuery=supabase.from("teachers").select("name").eq("id",userId).maybeSingle<Pick<Teacher,"name">>();
   const students:(Student&{plans:Plan|null})[]=[];
   for(let page=0;;page+=1000){const result=await supabase.from("students").select("*,plans(id,name,lessons,price)").eq("teacher_id",userId).order("name").order("id").range(page,page+999);if(result.error)throw result.error;students.push(...((result.data??[]) as (Student&{plans:Plan|null})[]));if((result.data?.length??0)<1000)break;}
