@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {ClassroomPdf} from "./classroom-pdf";
+import {createBrowserSupabase} from "@/lib/supabase/browser";
+import type {RealtimeChannel} from "@supabase/supabase-js";
 
 type JitsiApi = { addListener(event: string, callback: (data: { id?: string; on?: boolean; eventData?: {text?: string}; isFatal?: boolean; error?: { isFatal?: boolean } }) => void): void; executeCommand(command: string, ...args: unknown[]): void; pinParticipant(id: string): void; dispose(): void };
 declare global { interface Window { JitsiMeetExternalAPI?: new (domain: string, options: Record<string, unknown>) => JitsiApi } }
@@ -10,10 +12,24 @@ type JoinResponse = { error?: string; opensAt?: string; closesAt?: string; jitsi
 export function Classroom({ joinUrl, backHref }: { joinUrl: string; backHref: string }) {
   const container = useRef<HTMLDivElement>(null);
   const apiRef=useRef<JitsiApi|null>(null);const materialMessage=useRef<((text:string)=>void)|null>(null);
+  const materialChannel=useRef<RealtimeChannel|null>(null);const [channelName,setChannelName]=useState("");const [materialConnected,setMaterialConnected]=useState(false);
   const [role,setRole]=useState<"teacher"|"student">("student");const [pdfOpen,setPdfOpen]=useState(false);
-  const broadcast=useCallback((text:string)=>{try{apiRef.current?.executeCommand("sendEndpointTextMessage","",text);}catch{}},[]);
+  const broadcast=useCallback((text:string)=>{void materialChannel.current?.send({type:"broadcast",event:"material",payload:{text}}).catch(()=>setMaterialConnected(false));},[]);
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<{ message: string; window?: string; active?: boolean; left?: boolean; loading?: boolean }>({ message: "Preparando sua aula…", loading:true });
+  useEffect(()=>{
+    if(!state.active||!channelName)return;
+    const client=createBrowserSupabase();
+    // Only encrypted, occurrence-bound grants cross this opaque public topic.
+    // Reading or publishing the material still requires the authenticated backend.
+    const channel=client.channel(`lessonara-material:${channelName}`,{config:{broadcast:{self:false,ack:true}}});
+    materialChannel.current=channel;
+    channel.on("broadcast",{event:"material"},({payload})=>{if(typeof payload?.text==="string"&&payload.text.length<=8500)materialMessage.current?.(payload.text);}).subscribe(status=>{
+      setMaterialConnected(status==="SUBSCRIBED");
+      if(status==="SUBSCRIBED"){materialMessage.current?.(JSON.stringify({t:"lessonara-pdf-request"}));broadcast(JSON.stringify({t:"lessonara-pdf-request"}));}
+    });
+    return()=>{materialChannel.current=null;void client.removeChannel(channel);};
+  },[state.active,channelName,broadcast]);
   useEffect(() => {
     const controller = new AbortController();
     let api: JitsiApi | null = null;
@@ -41,8 +57,7 @@ export function Classroom({ joinUrl, backHref }: { joinUrl: string; backHref: st
         clearTimeout(timer);
         api = new window.JitsiMeetExternalAPI(new URL(data.jitsiUrl).host, { roomName: data.roomName, jwt: data.jwt, parentNode: container.current, width: "100%", height: "100%", lang: "pt-BR", userInfo: { displayName: data.displayName },
           configOverwrite: { whiteboard:{enabled:false}, prejoinConfig: { enabled: true }, disableDeepLinking: true, startWithAudioMuted: true, startWithVideoMuted: true } });
-        apiRef.current=api;setRole(data.role);
-        api.addListener("endpointTextMessageReceived",({eventData})=>{if(eventData?.text)materialMessage.current?.(eventData.text);});
+        apiRef.current=api;setRole(data.role);setChannelName(data.roomName);
         api.addListener("participantJoined",()=>materialMessage.current?.(JSON.stringify({t:"lessonara-pdf-request"})));
         setState({ message: "Conectando à sala…", active: true });
         let myId: string | undefined;
@@ -57,5 +72,5 @@ export function Classroom({ joinUrl, backHref }: { joinUrl: string; backHref: st
     void start();
     return () => { controller.abort(); clearTimeout(timer); api?.dispose();apiRef.current=null; script?.remove(); };
   }, [joinUrl, attempt,broadcast]);
-  return <main className={`classroom-screen ${pdfOpen&&state.active?"pdf-presenting":""}`}>{state.active&&<ClassroomPdf endpoint={joinUrl.replace(/\/join$/,"/material")} teacher={role==="teacher"} messageRef={materialMessage} broadcast={broadcast} onOpen={setPdfOpen}/>}<div ref={container} className="classroom-video" hidden={!state.active} />{!state.active && <section className="classroom-state" role="status">{state.loading ? <p className="flex items-center justify-center gap-3"><span className="action-spinner" aria-hidden="true"/>{state.message}</p> : <h1>{state.message}</h1>}{state.window && <p>{state.window}</p>}{!state.loading && <div className="flex flex-wrap justify-center gap-3"><button className="btn" onClick={() => { setState({ message: "Preparando sua aula…", loading:true }); setAttempt(a => a + 1); }}>{state.left ? "Entrar novamente" : "Tentar novamente"}</button><Link className="btn-ghost" href={backHref}>Voltar ao meu espaço</Link></div>}</section>}</main>;
+  return <main className={`classroom-screen ${pdfOpen&&state.active?"pdf-presenting":""}`}>{state.active&&<ClassroomPdf endpoint={joinUrl.replace(/\/join$/,"/material")} teacher={role==="teacher"} connected={materialConnected} messageRef={materialMessage} broadcast={broadcast} onOpen={setPdfOpen}/>}<div ref={container} className="classroom-video" hidden={!state.active} />{!state.active && <section className="classroom-state" role="status">{state.loading ? <p className="flex items-center justify-center gap-3"><span className="action-spinner" aria-hidden="true"/>{state.message}</p> : <h1>{state.message}</h1>}{state.window && <p>{state.window}</p>}{!state.loading && <div className="flex flex-wrap justify-center gap-3"><button className="btn" onClick={() => { setState({ message: "Preparando sua aula…", loading:true }); setAttempt(a => a + 1); }}>{state.left ? "Entrar novamente" : "Tentar novamente"}</button><Link className="btn-ghost" href={backHref}>Voltar ao meu espaço</Link></div>}</section>}</main>;
 }
